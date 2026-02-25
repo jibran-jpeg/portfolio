@@ -138,8 +138,8 @@ export default function ScrollyCanvas({ onLoadProgress }: ScrollyCanvasProps) {
                     ref={canvasRef}
                     className="absolute inset-0 w-full h-full object-cover z-0"
                 />
-                {/* Dimmer overlay for text readability */}
-                <div className="absolute inset-0 bg-black/30 z-0 pointer-events-none" />
+                {/* Very subtle dimmer overlay for text readability — keeps video bright */}
+                <div className="absolute inset-0 bg-black/10 z-0 pointer-events-none" />
             </div>
         </div>
     );

@@ -53,7 +53,7 @@ export default function Home() {
           <div className="sticky top-0 h-screen w-full overflow-hidden z-10 flex flex-col justify-center">
 
             {/* ColorBends blended over the hero video */}
-            <div className="absolute inset-0 z-[5] pointer-events-none mix-blend-soft-light opacity-25">
+            <div className="absolute inset-0 z-[5] pointer-events-none mix-blend-soft-light opacity-[0.12]">
               <ColorBends
                 colors={["#ff5c7a", "#8a5cff", "#00ffd1"]}
                 rotation={0}
