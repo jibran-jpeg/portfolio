@@ -61,6 +61,10 @@ export default function ScrollyCanvas({ onLoadProgress }: ScrollyCanvasProps) {
         const img = imagesRef.current[idx];
         if (!img || !img.complete || img.naturalWidth === 0) return;
 
+        // Maximum quality image rendering
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+
         // Object-fit: cover
         const cw = canvas.width;
         const ch = canvas.height;
@@ -106,10 +110,14 @@ export default function ScrollyCanvas({ onLoadProgress }: ScrollyCanvasProps) {
         const canvas = canvasRef.current;
         if (!canvas) return;
 
-        // Set canvas resolution
+        // Set canvas resolution — use devicePixelRatio for crisp HiDPI rendering
         const setSize = () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = window.innerWidth * dpr;
+            canvas.height = window.innerHeight * dpr;
+            // Scale canvas CSS size to match viewport (canvas resolution is higher)
+            canvas.style.width = window.innerWidth + "px";
+            canvas.style.height = window.innerHeight + "px";
             lastFrameRef.current = -1; // Force redraw after resize
         };
         setSize();
@@ -138,8 +146,6 @@ export default function ScrollyCanvas({ onLoadProgress }: ScrollyCanvasProps) {
                     ref={canvasRef}
                     className="absolute inset-0 w-full h-full object-cover z-0"
                 />
-                {/* Very subtle dimmer overlay for text readability — keeps video bright */}
-                <div className="absolute inset-0 bg-black/10 z-0 pointer-events-none" />
             </div>
         </div>
     );
