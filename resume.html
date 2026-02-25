@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jibran Sarwar - Resume</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #1a1a1a;
+            background: white;
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 28mm 24mm 20mm 24mm;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1.5px solid #111;
+        }
+
+        .header-left h1 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: #111;
+            margin-bottom: 4px;
+        }
+
+        .header-left .subtitle {
+            font-size: 13px;
+            font-weight: 500;
+            color: #555;
+            letter-spacing: 0.3px;
+        }
+
+        .header-right {
+            text-align: right;
+            font-size: 10px;
+            color: #444;
+            line-height: 1.7;
+        }
+
+        .header-right a {
+            color: #444;
+            text-decoration: none;
+        }
+
+        .header-right .label {
+            font-weight: 600;
+            color: #222;
+        }
+
+        /* Section */
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #111;
+            margin-bottom: 10px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        /* Experience */
+        .entry {
+            margin-bottom: 14px;
+        }
+
+        .entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 2px;
+        }
+
+        .entry-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #111;
+        }
+
+        .entry-date {
+            font-size: 10px;
+            color: #777;
+            font-weight: 400;
+        }
+
+        .entry-subtitle {
+            font-size: 10.5px;
+            color: #555;
+            margin-bottom: 4px;
+        }
+
+        .entry-description {
+            font-size: 10.5px;
+            color: #444;
+            line-height: 1.6;
+        }
+
+        .entry-description li {
+            margin-bottom: 2px;
+            margin-left: 14px;
+        }
+
+        /* Skills */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 32px;
+        }
+
+        .skill-category {
+            margin-bottom: 6px;
+        }
+
+        .skill-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: #222;
+            margin-bottom: 2px;
+        }
+
+        .skill-items {
+            font-size: 10.5px;
+            color: #555;
+        }
+
+        /* Projects */
+        .project {
+            margin-bottom: 12px;
+        }
+
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        .project-title {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: #111;
+        }
+
+        .project-tag {
+            font-size: 9px;
+            font-weight: 500;
+            color: #777;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .project-desc {
+            font-size: 10.5px;
+            color: #444;
+            margin-top: 2px;
+        }
+
+        .project-link {
+            font-size: 9.5px;
+            color: #0066cc;
+            text-decoration: none;
+            margin-top: 1px;
+            display: inline-block;
+        }
+
+        /* Education */
+        .edu-entry {
+            margin-bottom: 12px;
+        }
+
+        @media print {
+            body { -webkit-print-color-adjust: exact; }
+            .page { padding: 20mm 18mm 16mm 18mm; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <h1>Jibran Sarwar</h1>
+                <div class="subtitle">Full-Stack Developer &amp; AI Architect</div>
+            </div>
+            <div class="header-right">
+                <div><span class="label">Email:</span> devjibran0@gmail.com</div>
+                <div><span class="label">Phone:</span> +92 355 5123929</div>
+                <div><span class="label">GitHub:</span> <a href="https://github.com/jibran-jpeg">github.com/jibran-jpeg</a></div>
+                <div><span class="label">Location:</span> Islamabad, Pakistan</div>
+            </div>
+        </div>
+
+        <!-- Professional Summary -->
+        <div class="section">
+            <div class="section-title">Professional Summary</div>
+            <div class="entry-description">
+                Results-driven Full-Stack Developer and AI Architect with hands-on experience building autonomous AI agents, intelligent chatbots, and modern web applications. Specialized in AI Automation via n8n workflows, voice/chat AI integration, and premium UI development using React, Flutter, and cutting-edge design systems like Glassmorphism and Vibe Code. Currently co-founding an AI-driven automation Software House while pursuing BS Computer Science at SZABIST Islamabad.
+            </div>
+        </div>
+
+        <!-- Experience -->
+        <div class="section">
+            <div class="section-title">Experience</div>
+
+            <div class="entry">
+                <div class="entry-header">
+                    <div class="entry-title">AI & Full-Stack Freelancer</div>
+                    <div class="entry-date">2024 – Present</div>
+                </div>
+                <div class="entry-subtitle">Fiverr · Remote / Global</div>
+                <div class="entry-description">
+                    <ul>
+                        <li>Developing and deploying AI Chatbots and AI Voice Calling systems for international clients</li>
+                        <li>Building complex n8n automation workflows connecting AI agents with CRMs, databases, and social media platforms</li>
+                        <li>Integrating Ollama-based local LLMs for privacy-focused AI solutions</li>
+                        <li>Delivering end-to-end full-stack web applications with modern UI/UX standards</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="entry">
+                <div class="entry-header">
+                    <div class="entry-title">Software Developer</div>
+                    <div class="entry-date">2024</div>
+                </div>
+                <div class="entry-subtitle">ESQUAL · Islamabad, Pakistan</div>
+                <div class="entry-description">
+                    <ul>
+                        <li>Contributed to professional software development cycles and backend logic for scalable solutions</li>
+                        <li>Collaborated on industry-level projects following agile methodologies</li>
+                        <li>Gained exposure to production-grade deployment pipelines and team workflows</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Projects -->
+        <div class="section">
+            <div class="section-title">Projects</div>
+
+            <div class="project">
+                <div class="project-header">
+                    <div class="project-title">AI Voice & Chat Integration</div>
+                    <div class="project-tag">AI & Automation</div>
+                </div>
+                <div class="project-desc">Built and deployed autonomous AI agents capable of handling calls and chats, fully integrated with backend systems via n8n for real-time data processing and CRM synchronization.</div>
+            </div>
+
+            <div class="project">
+                <div class="project-header">
+                    <div class="project-title">The Skardu Basket</div>
+                    <div class="project-tag">Full-Stack Web</div>
+                </div>
+                <div class="project-desc">Developed a premium e-commerce interface focusing on modern aesthetic design patterns including Glassmorphism and Neumorphism.</div>
+                <a class="project-link" href="https://jibran-jpeg.github.io/the-skardu-basket/">jibran-jpeg.github.io/the-skardu-basket</a>
+            </div>
+
+            <div class="project">
+                <div class="project-header">
+                    <div class="project-title">Intelligent Chatbots via Ollama</div>
+                    <div class="project-tag">Agentic AI</div>
+                </div>
+                <div class="project-desc">Developing complex n8n workflows connecting AI agents with databases, CRMs, and social media platforms. Implementing local LLM solutions for enhanced privacy and performance.</div>
+            </div>
+
+            <div class="project">
+                <div class="project-header">
+                    <div class="project-title">Himalayan Trails</div>
+                    <div class="project-tag">UI/UX Design</div>
+                </div>
+                <div class="project-desc">Created professional visual assets, brand identity, and interactive web experiences maintaining high-end brand consistency across digital touchpoints.</div>
+            </div>
+        </div>
+
+        <!-- Education -->
+        <div class="section">
+            <div class="section-title">Education</div>
+            
+            <div class="edu-entry">
+                <div class="entry-header">
+                    <div class="entry-title">BS Computer Science</div>
+                    <div class="entry-date">2023 – Present</div>
+                </div>
+                <div class="entry-subtitle">SZABIST (Shaheed Zulfikar Ali Bhutto Institute of Science & Technology) · Islamabad, Pakistan</div>
+                <div class="entry-description">Co-founding a Software House specializing in AI-driven automation, with plans to pursue a Master's in Europe to specialize in Advanced AI Systems.</div>
+            </div>
+
+            <div class="edu-entry">
+                <div class="entry-header">
+                    <div class="entry-title">Higher Secondary Education (HSSC)</div>
+                    <div class="entry-date">Completed</div>
+                </div>
+                <div class="entry-subtitle">Public School and College · Skardu, Gilgit-Baltistan</div>
+            </div>
+        </div>
+
+        <!-- Skills -->
+        <div class="section">
+            <div class="section-title">Technical Skills</div>
+            <div class="skills-grid">
+                <div class="skill-category">
+                    <div class="skill-label">AI & Automation</div>
+                    <div class="skill-items">AI Voice Agents, Agentic AI, n8n Workflows, Ollama, LLM Integration</div>
+                </div>
+                <div class="skill-category">
+                    <div class="skill-label">Frontend Development</div>
+                    <div class="skill-items">React, Next.js, Flutter, Tailwind CSS, Framer Motion</div>
+                </div>
+                <div class="skill-category">
+                    <div class="skill-label">Backend & Database</div>
+                    <div class="skill-items">Supabase, PostgreSQL, Firebase, Node.js, REST APIs</div>
+                </div>
+                <div class="skill-category">
+                    <div class="skill-label">Design & Tools</div>
+                    <div class="skill-items">Glassmorphism, Neumorphism, Vibe Code, Figma, Git, VS Code</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
