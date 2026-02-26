@@ -103,42 +103,55 @@ export default function ScrollyCanvas({ onLoadProgress }: ScrollyCanvasProps) {
         return progress * (FRAME_COUNT - 1);
     }, []);
 
-    // Continuous render loop — always reads latest scroll position
+    // Continuous render loop — pauses when hero section is off-screen
     useEffect(() => {
         if (!imagesLoaded) return;
 
         const canvas = canvasRef.current;
-        if (!canvas) return;
+        const container = containerRef.current;
+        if (!canvas || !container) return;
 
-        // Set canvas resolution — use devicePixelRatio for crisp HiDPI rendering
+        // Set canvas resolution
         const setSize = () => {
-            const dpr = window.devicePixelRatio || 1;
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
             canvas.width = window.innerWidth * dpr;
             canvas.height = window.innerHeight * dpr;
-            // Scale canvas CSS size to match viewport (canvas resolution is higher)
             canvas.style.width = window.innerWidth + "px";
             canvas.style.height = window.innerHeight + "px";
-            lastFrameRef.current = -1; // Force redraw after resize
+            lastFrameRef.current = -1;
         };
         setSize();
 
         let animId = 0;
         let currentFrame = getScrollFrame();
+        let isActive = true;
 
         const tick = () => {
             if (readyRef.current) {
-                const targetFrame = getScrollFrame();
-                // Adding a lerp (linear interpolation) factor for ultra-smooth scrolling
-                currentFrame += (targetFrame - currentFrame) * 0.08;
-                drawFrame(currentFrame);
+                // Check if hero container is visible — stop rendering if off-screen
+                const rect = container.getBoundingClientRect();
+                const heroVisible = rect.bottom > 0 && rect.top < window.innerHeight;
+
+                if (heroVisible) {
+                    const targetFrame = getScrollFrame();
+                    const diff = targetFrame - currentFrame;
+                    // Only draw if there's meaningful difference
+                    if (Math.abs(diff) > 0.01) {
+                        currentFrame += diff * 0.12;
+                        drawFrame(currentFrame);
+                    }
+                }
             }
-            animId = requestAnimationFrame(tick);
+            if (isActive) {
+                animId = requestAnimationFrame(tick);
+            }
         };
         animId = requestAnimationFrame(tick);
 
         window.addEventListener("resize", setSize);
 
         return () => {
+            isActive = false;
             cancelAnimationFrame(animId);
             window.removeEventListener("resize", setSize);
         };

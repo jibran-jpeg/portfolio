@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Code2, Github, Linkedin, Mail, Menu, X, Download } from "lucide-react";
+import { Mail, Menu, X, Download } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -11,10 +11,13 @@ export default function Navbar() {
 
     useEffect(() => {
         const handleScroll = () => {
-            const heroEl = document.getElementById("home");
-            if (heroEl) {
-                const heroBottom = heroEl.offsetTop + heroEl.offsetHeight;
-                setPastHero(window.scrollY >= heroBottom - 80);
+            // Hero section is the first relative w-full div (800vh scrolly container)
+            const heroSection = document.querySelector('[class*="h-[800vh]"]');
+            if (heroSection) {
+                const heroBottom = heroSection.getBoundingClientRect().bottom;
+                setPastHero(heroBottom <= 0);
+            } else {
+                setPastHero(window.scrollY > window.innerHeight * 7);
             }
         };
 
@@ -61,34 +64,25 @@ export default function Navbar() {
                     }`}
             >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 flex items-center justify-between">
-                    {/* Logo */}
-                    <Link href="/" className="group flex items-center gap-2">
-                        <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all duration-300">
-                            <Code2 size={18} />
-                        </div>
-                        <span className="font-outfit font-bold text-lg md:text-xl tracking-wide text-white group-hover:text-white/80 transition-colors">
-                            Jibran<span className="text-white/50">.</span>
+                    {/* Logo — clean text only */}
+                    <Link href="/" className="group flex items-center">
+                        <span className="font-bold text-lg md:text-xl tracking-wide text-white group-hover:text-white/80 transition-colors">
+                            Jibran<span className="text-white/40">.</span>
                         </span>
                     </Link>
 
                     {/* Desktop Nav Links */}
                     <nav className="hidden md:flex items-center gap-8">
                         {navLinks.map((link) => (
-                            <Link key={link.href} href={link.href} className="text-sm font-medium text-white/60 hover:text-white transition-colors">
+                            <Link key={link.href} href={link.href} className="text-sm font-medium text-white/50 hover:text-white transition-colors duration-300">
                                 {link.label}
                             </Link>
                         ))}
                     </nav>
 
-                    {/* Right side */}
-                    <div className="flex items-center gap-3 md:gap-4">
-                        <a href="https://github.com/jibran-jpeg" target="_blank" rel="noopener noreferrer" className="hidden md:block text-white/40 hover:text-white transition-colors">
-                            <Github size={20} />
-                        </a>
-                        <a href="#" target="_blank" rel="noopener noreferrer" className="hidden md:block text-white/40 hover:text-[#0077b5] transition-colors">
-                            <Linkedin size={20} />
-                        </a>
-                        <a href="/resume.pdf" download="Jibran-Sarwar-Resume.pdf" className="hidden md:flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-white/10 bg-white/5 text-white/60 text-xs font-medium hover:bg-white/10 hover:text-white transition-all duration-300">
+                    {/* Right side — minimal */}
+                    <div className="flex items-center gap-3">
+                        <a href="/resume.pdf" download="Jibran-Sarwar-Resume.pdf" className="hidden md:flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-white/10 bg-white/5 text-white/50 text-xs font-medium hover:bg-white/10 hover:text-white transition-all duration-300">
                             <Download size={14} />
                             <span>Resume</span>
                         </a>
@@ -139,29 +133,21 @@ export default function Navbar() {
                             ))}
                         </nav>
 
-                        {/* Mobile social links + CTA */}
+                        {/* Mobile CTA buttons */}
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ delay: 0.3 }}
-                            className="mt-12 flex flex-col items-center gap-6"
+                            className="mt-12 flex flex-col items-center gap-4"
                         >
-                            <div className="flex items-center gap-5">
-                                <a href="https://github.com/jibran-jpeg" target="_blank" rel="noopener noreferrer" className="text-white/40 hover:text-white transition-colors">
-                                    <Github size={22} />
-                                </a>
-                                <a href="#" target="_blank" rel="noopener noreferrer" className="text-white/40 hover:text-[#0077b5] transition-colors">
-                                    <Linkedin size={22} />
-                                </a>
-                            </div>
                             <a
                                 href="/resume.pdf"
                                 download="Jibran-Sarwar-Resume.pdf"
                                 onClick={() => setMobileOpen(false)}
-                                className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/10 bg-white/5 text-white/70 text-sm font-medium hover:bg-white/10 transition-all"
+                                className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/10 bg-white/5 text-white/60 text-sm font-medium hover:bg-white/10 transition-all"
                             >
                                 <Download size={16} />
-                                Download Resume
+                                Resume
                             </a>
                             <a
                                 href="#contact"

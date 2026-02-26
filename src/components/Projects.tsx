@@ -2,58 +2,61 @@
 
 import { motion } from "framer-motion";
 import { ArrowUpRight, Briefcase, GraduationCap, Sparkles } from "lucide-react";
-import ColorBends from "./ColorBends";
 
 const PROJECTS = [
     {
         id: 1,
-        title: "AI Voice & Chat Integration",
-        category: "AI & Automation",
-        description: "Built and deployed autonomous AI agents capable of handling calls and chats, fully integrated with backend systems via n8n for real-time data processing.",
+        title: "GeoLead — Maps Lead Finder",
+        category: "Chrome Extension",
+        description: "Built a Google Chrome Extension that scrapes Google Maps for business leads by location, extracting contacts, emails, and phone numbers with automated scrolling and smart deduplication.",
         link: "https://github.com/jibran-jpeg",
     },
     {
         id: 2,
+        title: "AI Voice & Chat Integration",
+        category: "AI & Automation",
+        description: "Built and deployed autonomous AI agents using GPT, Gemini & Claude APIs, capable of handling calls and chats, fully integrated with backend systems via n8n.",
+        link: "https://github.com/jibran-jpeg",
+    },
+    {
+        id: 3,
         title: "The Skardu Basket",
         category: "Full-Stack Web",
         description: "Developed a premium e-commerce interface focusing on modern aesthetic 'Vibe Code', Glassmorphism, and Neumorphism.",
         link: "https://jibran-jpeg.github.io/the-skardu-basket/",
     },
     {
-        id: 3,
+        id: 4,
         title: "Intelligent Chatbots via Ollama",
         category: "Agentic AI",
         description: "Developing complex n8n workflows connecting AI agents with databases, CRMs, and social media platforms for Fiverr clients.",
-        link: "https://github.com/jibran-jpeg",
-    },
-    {
-        id: 4,
-        title: "Himalayan Trails",
-        category: "UI/UX Design",
-        description: "Created professional visual assets and posters, maintaining high-end brand consistency across digital touchpoints.",
         link: "https://github.com/jibran-jpeg",
     },
 ];
 
 const SKILLS = [
     "AI & Automation", "AI Voice Agents", "n8n Workflows", "Agentic AI", "Ollama",
-    "React", "Flutter", "Tailwind CSS", "Vibe Code", "Glassmorphism",
+    "OpenAI GPT API", "Gemini API", "Claude API", "API Integration",
+    "React", "Next.js", "Three.js", "Node.js", "Flutter", "Tailwind CSS",
+    "Python", "C++", "C", "AWS", "Chrome Extensions",
     "Supabase", "PostgreSQL", "Firebase"
 ];
 
 const EXPERIENCE = [
     {
-        role: "Software Developer",
+        role: "Web Development Intern",
         company: "ESQUAL",
+        period: "2025",
         location: "Islamabad, PK",
-        description: "Contributed to professional software development cycles and backend logic. Collaborated on industry-level projects to deliver scalable tech solutions.",
+        description: "Worked on full-stack web development projects, building responsive frontends with React and Node.js backends. Gained hands-on experience with AWS deployment, CI/CD pipelines, and industry-level software development practices.",
         icon: Briefcase,
     },
     {
         role: "AI & Full-Stack Freelancer",
-        company: "Fiverr",
-        location: "Global",
-        description: "Developing and deploying AI Chatbots and AI Voice Calling systems. Building complex n8n workflows to connect AI agents with CRM, databases, and social media.",
+        company: "Fiverr & Local Clients",
+        period: "2025 – Present",
+        location: "Global & Pakistan",
+        description: "Developing and deploying AI Chatbots and AI Voice Calling systems on Fiverr. Building complex n8n workflows to connect AI agents with CRM, databases, and social media. Also handling local clients for web development and AI automation solutions.",
         icon: Sparkles,
     },
 ];
@@ -81,21 +84,10 @@ const itemVariants = {
 export default function Projects() {
     return (
         <section id="projects" className="relative w-full bg-[#0a0a0a] z-20 overflow-hidden">
-            {/* Animated ColorBends background */}
-            <div className="absolute inset-0 z-0 opacity-30">
-                <ColorBends
-                    colors={["#ff5c7a", "#8a5cff", "#00ffd1"]}
-                    rotation={0}
-                    speed={0.15}
-                    scale={1.2}
-                    frequency={0.8}
-                    warpStrength={0.8}
-                    mouseInfluence={0.6}
-                    parallax={0.3}
-                    noise={0.08}
-                    transparent
-                    autoRotate={2}
-                />
+            {/* Lightweight CSS gradient background instead of heavy WebGL */}
+            <div className="absolute inset-0 z-0 opacity-20">
+                <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] rounded-full bg-[#8a5cff]/20 blur-[120px]" />
+                <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] rounded-full bg-[#ff5c7a]/15 blur-[120px]" />
             </div>
 
             {/* Top fade from hero into this section */}
@@ -138,7 +130,7 @@ export default function Projects() {
                                                     <h3 className="font-semibold text-white text-base">{exp.role}</h3>
                                                 </div>
                                                 <p className="text-white/50 text-sm mb-3">
-                                                    {exp.company} <span className="text-white/20 mx-1.5">·</span> {exp.location}
+                                                    {exp.company} <span className="text-white/20 mx-1.5">·</span> {exp.location} {exp.period && <><span className="text-white/20 mx-1.5">·</span> <span className="text-white/40">{exp.period}</span></>}
                                                 </p>
                                                 <p className="text-white/40 text-sm leading-relaxed">{exp.description}</p>
                                             </div>

@@ -53,7 +53,7 @@ export default function Overlay({ progress }: { progress?: MotionValue<number> }
                     Building high-vibe digital products.
                 </h2>
                 <p className="mt-4 sm:mt-6 text-sm sm:text-base md:text-lg text-white/40 max-w-lg font-body font-light leading-relaxed">
-                    Specialized in AI Automation, intelligent Chatbots integrated via n8n, and modern UI styles like Glassmorphism and Vibe Code.
+                    Integrating GPT, Gemini &amp; Claude APIs into production apps. Building with React, Three.js, Node.js, Python &amp; C++, deployed on AWS.
                 </p>
             </motion.div>
 
