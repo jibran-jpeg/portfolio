@@ -2,10 +2,10 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 
-const FRAME_COUNT = 190; // frame_003 to frame_192
+const FRAME_COUNT = 187; // frame_006 to frame_192
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 const FRAME_FORMAT = (index: number) =>
-    `${basePath}/sequence/frame_${(index + 3).toString().padStart(3, "0")}_delay-0.042s.webp`;
+    `${basePath}/sequence/frame_${(index + 6).toString().padStart(3, "0")}_delay-0.042s.webp`;
 
 interface ScrollyCanvasProps {
     onLoadProgress?: (loaded: number, total: number, done: boolean) => void;
