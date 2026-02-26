@@ -37,12 +37,21 @@ export default function Navbar() {
 
     // Prevent body scroll when mobile menu is open
     useEffect(() => {
+        const html = document.documentElement;
         if (mobileOpen) {
             document.body.style.overflow = "hidden";
+            html.style.overflow = "hidden";
+            document.body.style.touchAction = "none";
         } else {
             document.body.style.overflow = "";
+            html.style.overflow = "";
+            document.body.style.touchAction = "";
         }
-        return () => { document.body.style.overflow = ""; };
+        return () => {
+            document.body.style.overflow = "";
+            html.style.overflow = "";
+            document.body.style.touchAction = "";
+        };
     }, [mobileOpen]);
 
     const navLinks = [

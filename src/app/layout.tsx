@@ -19,6 +19,13 @@ export const metadata: Metadata = {
   description: "Portfolio of Jibran Sarwar - Building high-vibe digital products and AI Automations.",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  interactiveWidget: "resizes-content",
+};
+
 import SmoothScrolling from "@/components/SmoothScrolling";
 
 export default function RootLayout({

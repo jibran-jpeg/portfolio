@@ -61,7 +61,6 @@ export default function ScrollyCanvas({ onLoadProgress }: ScrollyCanvasProps) {
         const img = imagesRef.current[idx];
         if (!img || !img.complete || img.naturalWidth === 0) return;
 
-        // Maximum quality image rendering
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = "high";
 
@@ -111,16 +110,20 @@ export default function ScrollyCanvas({ onLoadProgress }: ScrollyCanvasProps) {
         const container = containerRef.current;
         if (!canvas || !container) return;
 
-        // Set canvas resolution
+        // Set canvas resolution — capped DPR for mobile performance
         const setSize = () => {
             const dpr = Math.min(window.devicePixelRatio || 1, 2);
             canvas.width = window.innerWidth * dpr;
             canvas.height = window.innerHeight * dpr;
-            canvas.style.width = window.innerWidth + "px";
-            canvas.style.height = window.innerHeight + "px";
+            canvas.style.width = "100%";
+            canvas.style.height = "100%";
             lastFrameRef.current = -1;
         };
         setSize();
+
+        // Draw frame 0 immediately to prevent blank screen
+        lastFrameRef.current = -1;
+        drawFrame(0);
 
         let animId = 0;
         let currentFrame = getScrollFrame();
@@ -128,14 +131,12 @@ export default function ScrollyCanvas({ onLoadProgress }: ScrollyCanvasProps) {
 
         const tick = () => {
             if (readyRef.current) {
-                // Check if hero container is visible — stop rendering if off-screen
                 const rect = container.getBoundingClientRect();
                 const heroVisible = rect.bottom > 0 && rect.top < window.innerHeight;
 
                 if (heroVisible) {
                     const targetFrame = getScrollFrame();
                     const diff = targetFrame - currentFrame;
-                    // Only draw if there's meaningful difference
                     if (Math.abs(diff) > 0.01) {
                         currentFrame += diff * 0.12;
                         drawFrame(currentFrame);
@@ -159,10 +160,10 @@ export default function ScrollyCanvas({ onLoadProgress }: ScrollyCanvasProps) {
 
     return (
         <div ref={containerRef} className="relative h-[800vh] w-full bg-[#121212]">
-            <div className="sticky top-0 h-screen w-full overflow-hidden">
+            <div className="sticky top-0 h-[100dvh] w-full overflow-hidden">
                 <canvas
                     ref={canvasRef}
-                    className="absolute inset-0 w-full h-full object-cover z-0"
+                    className="absolute inset-0 w-full h-full z-0"
                 />
             </div>
         </div>
