@@ -2,10 +2,10 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 
-const FRAME_COUNT = 187; // frame_006 to frame_192
+const FRAME_COUNT = 237; // 240 minus first 3 frames
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 const FRAME_FORMAT = (index: number) =>
-    `${basePath}/sequence/frame_${(index + 6).toString().padStart(3, "0")}_delay-0.042s.webp`;
+    `${basePath}/sequence/frame_${(index + 4).toString().padStart(3, "0")}.jpg`;
 
 interface ScrollyCanvasProps {
     onLoadProgress?: (loaded: number, total: number, done: boolean) => void;
@@ -110,11 +110,21 @@ export default function ScrollyCanvas({ onLoadProgress }: ScrollyCanvasProps) {
         const container = containerRef.current;
         if (!canvas || !container) return;
 
+        let lastWidth = window.innerWidth;
+
         // Set canvas resolution — capped DPR for mobile performance
         const setSize = () => {
+            const currentWidth = window.innerWidth;
+            // Ignore height-only resizes on ALL devices (e.g., address bar hiding/showing on mobile/tablet browsers) to prevent jarring zoom glitches
+            if (canvas.width > 0 && currentWidth === lastWidth) {
+                return;
+            }
+            lastWidth = currentWidth;
+
             const dpr = Math.min(window.devicePixelRatio || 1, 2);
-            canvas.width = window.innerWidth * dpr;
+            canvas.width = currentWidth * dpr;
             canvas.height = window.innerHeight * dpr;
+            // Use CSS to keep it filling the container, ignoring internal resolution jumps
             canvas.style.width = "100%";
             canvas.style.height = "100%";
             lastFrameRef.current = -1;
@@ -137,8 +147,8 @@ export default function ScrollyCanvas({ onLoadProgress }: ScrollyCanvasProps) {
                 if (heroVisible) {
                     const targetFrame = getScrollFrame();
                     const diff = targetFrame - currentFrame;
-                    if (Math.abs(diff) > 0.01) {
-                        currentFrame += diff * 0.12;
+                    if (Math.abs(diff) > 0.05) {
+                        currentFrame += diff * 0.15;
                         drawFrame(currentFrame);
                     }
                 }
