@@ -40,6 +40,35 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
         return () => clearTimeout(fallbackTimer);
     }, [handleCanPlay]);
 
+    // iOS/Mobile video initialization workaround
+    useEffect(() => {
+        const video = videoRef.current;
+        if (!video) return;
+
+        const primeVideo = () => {
+            if (video.paused) {
+                video.play().then(() => {
+                    video.pause();
+                }).catch(() => {
+                    // Ignore autoplay errors
+                });
+            }
+            window.removeEventListener('touchstart', primeTouch);
+        };
+
+        const primeTouch = () => primeVideo();
+
+        // Try to prime immediately (works for muted video on most modern mobiles)
+        primeVideo();
+
+        // Fallback: on first touch interaction
+        window.addEventListener('touchstart', primeTouch, { once: true });
+
+        return () => {
+            window.removeEventListener('touchstart', primeTouch);
+        };
+    }, []);
+
     useEffect(() => {
         const video = videoRef.current;
         const container = containerRef.current;
