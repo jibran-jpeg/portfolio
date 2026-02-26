@@ -170,10 +170,10 @@ export default function ScrollyCanvas({ onLoadProgress }: ScrollyCanvasProps) {
 
     return (
         <div ref={containerRef} className="relative h-[800vh] w-full bg-[#121212]">
-            <div className="sticky top-0 h-[100dvh] w-full overflow-hidden">
+            <div className="sticky top-0 h-[100vh] w-full overflow-hidden">
                 <canvas
                     ref={canvasRef}
-                    className="absolute inset-0 w-full h-full z-0"
+                    className="absolute inset-0 w-full h-full object-cover z-0"
                 />
             </div>
         </div>
