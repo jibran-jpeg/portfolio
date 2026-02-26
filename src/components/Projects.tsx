@@ -73,11 +73,11 @@ const containerVariants = {
 };
 
 const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
+    hidden: { opacity: 0, y: 20 },
     visible: {
         opacity: 1,
         y: 0,
-        transition: { duration: 0.5, ease: [0.25, 0.1, 0.25, 1] as const },
+        transition: { duration: 0.8, ease: [0.25, 0.1, 0.25, 1] as const },
     },
 };
 
@@ -104,7 +104,7 @@ export default function Projects() {
                             initial={{ opacity: 0, x: -40 }}
                             whileInView={{ opacity: 1, x: 0 }}
                             viewport={{ once: true, margin: "-80px" }}
-                            transition={{ duration: 0.7, ease: "easeOut" }}
+                            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
                         >
                             <p className="text-xs uppercase tracking-[0.3em] text-white/30 mb-3">Career</p>
                             <h2 className="text-2xl md:text-3xl font-semibold text-white tracking-tight mb-10">
@@ -118,7 +118,7 @@ export default function Projects() {
                                         initial={{ opacity: 0, y: 20 }}
                                         whileInView={{ opacity: 1, y: 0 }}
                                         viewport={{ once: true }}
-                                        transition={{ duration: 0.5, delay: i * 0.15 }}
+                                        transition={{ duration: 0.8, delay: i * 0.15, ease: [0.25, 0.1, 0.25, 1] }}
                                         className="group p-6 rounded-2xl bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.05] hover:border-white/[0.12] transition-all duration-500"
                                     >
                                         <div className="flex items-start gap-4">
@@ -145,7 +145,7 @@ export default function Projects() {
                             initial={{ opacity: 0, x: 40 }}
                             whileInView={{ opacity: 1, x: 0 }}
                             viewport={{ once: true, margin: "-80px" }}
-                            transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
+                            transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
                         >
                             <p className="text-xs uppercase tracking-[0.3em] text-white/30 mb-3">Stack</p>
                             <h2 className="text-2xl md:text-3xl font-semibold text-white tracking-tight mb-10">
@@ -170,12 +170,11 @@ export default function Projects() {
                                 ))}
                             </motion.div>
 
-                            {/* Education Card */}
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
-                                transition={{ duration: 0.6, delay: 0.3 }}
+                                transition={{ duration: 0.8, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
                                 className="mt-10 p-6 rounded-2xl bg-white/[0.02] border border-white/[0.06]"
                             >
                                 <div className="flex items-start gap-4">
@@ -196,7 +195,7 @@ export default function Projects() {
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
-                                transition={{ duration: 0.6, delay: 0.45 }}
+                                transition={{ duration: 0.8, delay: 0.45, ease: [0.25, 0.1, 0.25, 1] }}
                                 className="mt-4 p-6 rounded-2xl bg-white/[0.02] border border-white/[0.06]"
                             >
                                 <div className="flex items-start gap-4">
@@ -224,7 +223,7 @@ export default function Projects() {
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true, margin: "-80px" }}
-                        transition={{ duration: 0.7, ease: "easeOut" }}
+                        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
                         className="mb-16"
                     >
                         <p className="text-xs uppercase tracking-[0.3em] text-white/30 mb-3">Portfolio</p>
@@ -241,10 +240,10 @@ export default function Projects() {
                             <motion.a
                                 key={project.id}
                                 href={project.link}
-                                initial={{ opacity: 0, y: 40 }}
+                                initial={{ opacity: 0, y: 30 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true, margin: "-60px" }}
-                                transition={{ duration: 0.5, delay: idx * 0.08, ease: "easeOut" }}
+                                transition={{ duration: 0.9, delay: idx * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
                                 className="group relative block p-5 sm:p-7 rounded-2xl bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.05] hover:border-white/[0.12] transition-all duration-500"
                             >
                                 <div className="flex flex-col h-full justify-between min-h-[160px] sm:min-h-[200px]">

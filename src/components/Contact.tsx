@@ -39,7 +39,7 @@ export default function Contact() {
                         initial={{ opacity: 0, x: -40 }}
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true, margin: "-80px" }}
-                        transition={{ duration: 0.7, ease: "easeOut" }}
+                        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
                     >
                         <p className="text-xs uppercase tracking-[0.3em] text-white/30 mb-3">Get in Touch</p>
                         <h2 className="text-2xl md:text-3xl font-semibold text-white tracking-tight mb-4">
@@ -107,7 +107,7 @@ export default function Contact() {
                         initial={{ opacity: 0, x: 40 }}
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true, margin: "-80px" }}
-                        transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
+                        transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
                     >
                         <form onSubmit={handleSubmit} className="space-y-5">
                             <div>

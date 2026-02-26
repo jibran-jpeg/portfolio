@@ -64,15 +64,17 @@ export default function Navbar() {
     return (
         <>
             <motion.header
-                initial={{ y: -100, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
                 className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${pastHero
                     ? "bg-[#0a0a0a]/75 backdrop-blur-2xl border-b border-white/10 py-3 shadow-[0_4px_30px_rgba(0,0,0,0.5)]"
                     : "bg-transparent border-b border-transparent py-4 md:py-6"
                     }`}
             >
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 flex items-center justify-between">
+                <motion.div
+                    initial={{ opacity: 0, y: -20, filter: "blur(4px)" }}
+                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    transition={{ duration: 1.2, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
+                    className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 flex items-center justify-between"
+                >
                     {/* Logo — clean text only */}
                     <Link href="/" className="group flex items-center">
                         <span className="font-bold text-lg md:text-xl tracking-wide text-white group-hover:text-white/80 transition-colors">
@@ -109,7 +111,7 @@ export default function Navbar() {
                             {mobileOpen ? <X size={18} /> : <Menu size={18} />}
                         </button>
                     </div>
-                </div>
+                </motion.div>
             </motion.header>
 
             {/* Mobile Menu Overlay */}
