@@ -123,9 +123,14 @@ export default function ScrollyCanvas({ onLoadProgress }: ScrollyCanvasProps) {
         setSize();
 
         let animId = 0;
+        let currentFrame = getScrollFrame();
+
         const tick = () => {
             if (readyRef.current) {
-                drawFrame(getScrollFrame());
+                const targetFrame = getScrollFrame();
+                // Adding a lerp (linear interpolation) factor for ultra-smooth scrolling
+                currentFrame += (targetFrame - currentFrame) * 0.08;
+                drawFrame(currentFrame);
             }
             animId = requestAnimationFrame(tick);
         };

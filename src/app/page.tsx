@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { useScroll } from "framer-motion";
+import { useScroll, useSpring } from "framer-motion";
 import ScrollyCanvas from "@/components/ScrollyCanvas";
 import Overlay from "@/components/Overlay";
 import Projects from "@/components/Projects";
@@ -17,6 +17,12 @@ export default function Home() {
   const { scrollYProgress } = useScroll({
     target: heroRef,
     offset: ["start start", "end end"]
+  });
+
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 80,
+    damping: 20,
+    restDelta: 0.001
   });
 
   // Always start from top on page load / reload
@@ -70,7 +76,7 @@ export default function Home() {
             </div>
 
             {/* Overlay synchronized to the 800vh parent scroll context */}
-            <Overlay progress={scrollYProgress} />
+            <Overlay progress={smoothProgress} />
           </div>
         </div>
       </div>

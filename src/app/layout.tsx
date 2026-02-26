@@ -19,6 +19,8 @@ export const metadata: Metadata = {
   description: "Portfolio of Jibran Sarwar - Building high-vibe digital products and AI Automations.",
 };
 
+import SmoothScrolling from "@/components/SmoothScrolling";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -27,7 +29,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={`${sora.variable} ${dmSans.variable}`}>
       <body className="font-sans antialiased text-white bg-[#121212]">
-        {children}
+        <SmoothScrolling>
+          {children}
+        </SmoothScrolling>
       </body>
     </html>
   );
