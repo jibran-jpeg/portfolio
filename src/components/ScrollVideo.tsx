@@ -93,8 +93,6 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
                     onCanPlayThrough={handleCanPlay}
                     onCanPlay={handleCanPlay}
                     onLoadedData={handleCanPlay}
-                    onLoadedMetadata={handleCanPlay}
-                    onProgress={handleCanPlay}
                     className="absolute inset-0 w-full h-full object-cover z-0"
                     style={{ pointerEvents: "none" }}
                     initial={{ scale: 1.15, filter: "blur(10px)", opacity: 0 }}
