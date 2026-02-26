@@ -24,6 +24,14 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
         }
     }, [isReady, onReady]);
 
+    // Safety check for cached videos
+    useEffect(() => {
+        // readyState >= 2 (HAVE_CURRENT_DATA) is enough to show the first frame visually
+        if (videoRef.current && videoRef.current.readyState >= 2) {
+            handleCanPlay();
+        }
+    }, [handleCanPlay]);
+
     useEffect(() => {
         const video = videoRef.current;
         const container = containerRef.current;
@@ -83,6 +91,8 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
                     playsInline
                     preload="auto"
                     onCanPlayThrough={handleCanPlay}
+                    onCanPlay={handleCanPlay}
+                    onLoadedData={handleCanPlay}
                     className="absolute inset-0 w-full h-full object-cover z-0"
                     style={{ pointerEvents: "none" }}
                     initial={{ scale: 1.15, filter: "blur(10px)", opacity: 0 }}
