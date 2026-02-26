@@ -30,6 +30,14 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
         if (videoRef.current && videoRef.current.readyState >= 2) {
             handleCanPlay();
         }
+
+        // Fallback: if video events don't fire for some reason (e.g. error, stuck loading),
+        // let the page proceed after 3.5 seconds
+        const fallbackTimer = setTimeout(() => {
+            handleCanPlay();
+        }, 3500);
+
+        return () => clearTimeout(fallbackTimer);
     }, [handleCanPlay]);
 
     useEffect(() => {
@@ -93,6 +101,7 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
                     onCanPlayThrough={handleCanPlay}
                     onCanPlay={handleCanPlay}
                     onLoadedData={handleCanPlay}
+                    onError={handleCanPlay}
                     className="absolute inset-0 w-full h-full object-cover z-0"
                     style={{ pointerEvents: "none" }}
                     initial={{ scale: 1.15, filter: "blur(10px)", opacity: 0 }}
