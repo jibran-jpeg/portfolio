@@ -2,10 +2,10 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 
-const FRAME_COUNT = 237; // 240 minus first 3 frames
+const FRAME_COUNT = 184; // 192 total minus first 8 frames (starts at 009)
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 const FRAME_FORMAT = (index: number) =>
-    `${basePath}/sequence/frame_${(index + 4).toString().padStart(3, "0")}.jpg`;
+    `${basePath}/sequence/frame_${(index + 9).toString().padStart(3, "0")}_delay-0.042s.webp`;
 
 interface ScrollyCanvasProps {
     onLoadProgress?: (loaded: number, total: number, done: boolean) => void;

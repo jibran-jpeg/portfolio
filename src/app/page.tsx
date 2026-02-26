@@ -10,7 +10,7 @@ import Contact from "@/components/Contact";
 import Navbar from "@/components/Navbar";
 
 export default function Home() {
-  const [loadProgress, setLoadProgress] = useState({ loaded: 0, total: 237, done: false });
+  const [loadProgress, setLoadProgress] = useState({ loaded: 0, total: 184, done: false });
 
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
