@@ -115,18 +115,19 @@ export default function ScrollyCanvas({ onLoadProgress }: ScrollyCanvasProps) {
         // Set canvas resolution — capped DPR for mobile performance
         const setSize = () => {
             const currentWidth = window.innerWidth;
-            // Ignore height-only resizes on ALL devices (e.g., address bar hiding/showing on mobile/tablet browsers) to prevent jarring zoom glitches
+            // Ignore height-only resizes on ALL devices (e.g., address bar hiding/showing on mobile/tablet browsers)
+            // This prevents jarring zoom glitches when toolbar toggles.
             if (canvas.width > 0 && currentWidth === lastWidth) {
                 return;
             }
             lastWidth = currentWidth;
 
             const dpr = Math.min(window.devicePixelRatio || 1, 2);
-            canvas.width = currentWidth * dpr;
-            canvas.height = window.innerHeight * dpr;
-            // Use CSS to keep it filling the container, ignoring internal resolution jumps
-            canvas.style.width = "100%";
-            canvas.style.height = "100%";
+            // Internal resolution uses offsetWidth/Height to match exactly with the 100lvh structure!
+            // This stops image stretching caused by mismatches between initial innerHeight and CSS 100lvh.
+            canvas.width = (canvas.offsetWidth || currentWidth) * dpr;
+            canvas.height = (canvas.offsetHeight || window.innerHeight) * dpr;
+
             lastFrameRef.current = -1;
         };
         setSize();
@@ -170,10 +171,11 @@ export default function ScrollyCanvas({ onLoadProgress }: ScrollyCanvasProps) {
 
     return (
         <div ref={containerRef} className="relative h-[800vh] w-full bg-[#121212]">
-            <div className="sticky top-0 h-[100vh] w-full overflow-hidden">
+            <div className="sticky top-0 h-[100lvh] w-full overflow-hidden">
                 <canvas
                     ref={canvasRef}
-                    className="absolute inset-0 w-full h-full object-cover z-0"
+                    className="absolute inset-0 w-full h-[100lvh] z-0"
+                    style={{ objectFit: 'cover' }}
                 />
             </div>
         </div>
