@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { useScroll, useSpring } from "framer-motion";
+import { useScroll } from "framer-motion";
 import ScrollyCanvas from "@/components/ScrollyCanvas";
 import Overlay from "@/components/Overlay";
 import Projects from "@/components/Projects";
@@ -9,6 +9,9 @@ import LoadingScreen from "@/components/LoadingScreen";
 import ColorBends from "@/components/ColorBends";
 import Contact from "@/components/Contact";
 import Navbar from "@/components/Navbar";
+import NoiseOverlay from "@/components/NoiseOverlay";
+import ScrollProgress from "@/components/ScrollProgress";
+import PageTransition from "@/components/PageTransition";
 
 export default function Home() {
   const [loadProgress, setLoadProgress] = useState({ loaded: 0, total: 187, done: false });
@@ -19,11 +22,6 @@ export default function Home() {
     offset: ["start start", "end end"]
   });
 
-  const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 80,
-    damping: 20,
-    restDelta: 0.001
-  });
 
   // Always start from top on page load / reload
   useEffect(() => {
@@ -39,53 +37,58 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-[#121212] selection:bg-white/30 selection:text-white">
+      {/* Cinematic film grain overlay */}
+      <NoiseOverlay />
       <Navbar />
       {/* Full-screen loading overlay — renders ABOVE everything */}
       {!loadProgress.done && (
         <LoadingScreen loaded={loadProgress.loaded} total={loadProgress.total} />
       )}
 
-      {/* 
-        The hero section is an 800vh relative container.
-        We sync scroll progress of this specific container explicitly.
-      */}
-      <div ref={heroRef} className="relative w-full">
-        {/* ScrollyCanvas inherently sets itself to h-[800vh] */}
-        <ScrollyCanvas onLoadProgress={handleLoadProgress} />
+      {/* Page transition animation wrapper */}
+      <PageTransition>
+        {/* 
+          The hero section is an 800vh relative container.
+          We sync scroll progress of this specific container explicitly.
+        */}
+        <div ref={heroRef} className="relative w-full">
+          {/* ScrollyCanvas inherently sets itself to h-[800vh] */}
+          <ScrollyCanvas onLoadProgress={handleLoadProgress} />
 
-        {/* Overlay Container: position absolute to fill the 800vh parent */}
-        <div className="absolute top-0 left-0 right-0 h-full pointer-events-none">
-          {/* Sticky wrapper stays pinned to viewport while scrolling within the 800vh parent */}
-          <div className="sticky top-0 h-screen w-full overflow-hidden z-10 flex flex-col justify-center">
+          {/* Overlay Container: position absolute to fill the 800vh parent */}
+          <div className="absolute top-0 left-0 right-0 h-full pointer-events-none">
+            {/* Sticky wrapper stays pinned to viewport while scrolling within the 800vh parent */}
+            <div className="sticky top-0 h-screen w-full overflow-hidden z-10 flex flex-col justify-center">
 
-            {/* ColorBends blended over the hero video */}
-            <div className="absolute inset-0 z-[5] pointer-events-none mix-blend-soft-light opacity-[0.12]">
-              <ColorBends
-                colors={["#ff5c7a", "#8a5cff", "#00ffd1"]}
-                rotation={0}
-                speed={0.15}
-                scale={1.5}
-                frequency={0.6}
-                warpStrength={0.6}
-                mouseInfluence={0.4}
-                parallax={0.2}
-                noise={0.05}
-                transparent
-                autoRotate={1}
-              />
+              {/* ColorBends blended over the hero video */}
+              <div className="absolute inset-0 z-[5] pointer-events-none mix-blend-soft-light opacity-[0.12]">
+                <ColorBends
+                  colors={["#ff5c7a", "#8a5cff", "#00ffd1"]}
+                  rotation={0}
+                  speed={0.15}
+                  scale={1.5}
+                  frequency={0.6}
+                  warpStrength={0.6}
+                  mouseInfluence={0.4}
+                  parallax={0.2}
+                  noise={0.05}
+                  transparent
+                  autoRotate={1}
+                />
+              </div>
+
+              {/* Overlay synchronized to the 800vh parent scroll context */}
+              <Overlay progress={scrollYProgress} />
             </div>
-
-            {/* Overlay synchronized to the 800vh parent scroll context */}
-            <Overlay progress={smoothProgress} />
           </div>
         </div>
-      </div>
 
-      {/* Projects Grid rendered after the scrolly section */}
-      <Projects />
+        {/* Projects Grid rendered after the scrolly section */}
+        <Projects />
 
-      {/* Contact Section */}
-      <Contact />
+        {/* Contact Section */}
+        <Contact />
+      </PageTransition>
 
       {/* Footer */}
       <footer className="w-full py-8 sm:py-12 px-4 sm:px-6 relative z-20 border-t border-white/[0.06] bg-[#0a0a0a]">

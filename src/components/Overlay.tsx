@@ -6,20 +6,20 @@ export default function Overlay({ progress }: { progress?: MotionValue<number> }
     const { scrollYProgress: defaultScroll } = useScroll();
     const scrollYProgress = progress || defaultScroll;
 
-    // Opacities – section 1 fades out completely before section 2 enters
+    // Opacities – each section fades in and out cleanly, section 3 extends to the end
     const opacity1 = useTransform(scrollYProgress, [0, 0.06, 0.1, 0.14], [1, 1, 0, 0]);
-    const opacity2 = useTransform(scrollYProgress, [0.2, 0.28, 0.4, 0.45], [0, 1, 1, 0]);
-    const opacity3 = useTransform(scrollYProgress, [0.5, 0.6, 0.7, 0.75], [0, 1, 1, 0]);
+    const opacity2 = useTransform(scrollYProgress, [0.2, 0.28, 0.4, 0.48], [0, 1, 1, 0]);
+    const opacity3 = useTransform(scrollYProgress, [0.55, 0.63, 0.85, 0.92], [0, 1, 1, 0]);
 
     // Visibility – hard-hide sections when opacity is 0 so nothing bleeds through
     const vis1 = useTransform(scrollYProgress, (v) => (v <= 0.14 ? "visible" : "hidden") as "visible" | "hidden");
-    const vis2 = useTransform(scrollYProgress, (v) => (v >= 0.2 && v <= 0.45 ? "visible" : "hidden") as "visible" | "hidden");
-    const vis3 = useTransform(scrollYProgress, (v) => (v >= 0.5 && v <= 0.75 ? "visible" : "hidden") as "visible" | "hidden");
+    const vis2 = useTransform(scrollYProgress, (v) => (v >= 0.2 && v <= 0.48 ? "visible" : "hidden") as "visible" | "hidden");
+    const vis3 = useTransform(scrollYProgress, (v) => (v >= 0.55 && v <= 0.92 ? "visible" : "hidden") as "visible" | "hidden");
 
     // Y Transforms (Parallax)
     const y1 = useTransform(scrollYProgress, [0, 0.25], [0, -100]);
-    const y2 = useTransform(scrollYProgress, [0.2, 0.45], [100, -100]);
-    const y3 = useTransform(scrollYProgress, [0.45, 0.75], [100, -100]);
+    const y2 = useTransform(scrollYProgress, [0.2, 0.48], [100, -100]);
+    const y3 = useTransform(scrollYProgress, [0.55, 0.92], [60, -60]);
 
     return (
         <div className="absolute inset-0 pointer-events-none z-10 flex flex-col justify-center px-6 md:px-24">
