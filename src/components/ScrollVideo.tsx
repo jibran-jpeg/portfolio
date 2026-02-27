@@ -5,10 +5,9 @@ import { motion } from "framer-motion";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
-// Starting frame offset for the intro reverse animation (~5 frames at 24fps)
-const INTRO_START_TIME = 0.2;
-// Duration of the reverse intro animation in seconds (synced with reveal animation)
-const INTRO_DURATION = 2.0;
+// Intro reverse animation: scrub from this time back to 0
+const INTRO_START_TIME = 1.0;
+const INTRO_DURATION = 2.5; // seconds
 
 interface ScrollVideoProps {
     onReady?: () => void;
@@ -19,11 +18,9 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const [isReady, setIsReady] = useState(false);
     const rafRef = useRef<number>(0);
-    const currentTimeRef = useRef(INTRO_START_TIME);
-    const introCompleteRef = useRef(false);
-    const introStartTimeRef = useRef<number | null>(null);
+    const currentTimeRef = useRef(0);
 
-    // Wait until enough data is buffered for smooth seeking
+    // Signal "ready" to parent (loading screen) when we have enough data
     const handleCanPlay = useCallback(() => {
         if (!isReady) {
             setIsReady(true);
@@ -31,9 +28,12 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
         }
     }, [isReady, onReady]);
 
-    // Safety check for cached videos
+    // Safety check for cached videos + fallback
     useEffect(() => {
-        if (videoRef.current && videoRef.current.readyState >= 2) {
+        const video = videoRef.current;
+        if (!video) return;
+
+        if (video.readyState >= 2) {
             handleCanPlay();
         }
 
@@ -44,90 +44,93 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
         return () => clearTimeout(fallbackTimer);
     }, [handleCanPlay]);
 
-    // iOS/Mobile video initialization — prime for seeking + show starting frame
+    // iOS/Mobile: prime video for seeking
     useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
 
-        let primingInProgress = false;
         let primed = false;
 
-        const initVideo = () => {
-            if (primingInProgress || primed) return;
-            primingInProgress = true;
-
+        const prime = () => {
+            if (primed) return;
+            primed = true;
             video.play().then(() => {
                 video.pause();
-                // Start at frame ~5 for the reverse intro animation
                 video.currentTime = INTRO_START_TIME;
-                primed = true;
-                primingInProgress = false;
             }).catch(() => {
                 video.currentTime = INTRO_START_TIME;
-                primed = true;
-                primingInProgress = false;
             });
         };
 
-        if (video.readyState >= 2) {
-            initVideo();
-        }
-        video.addEventListener('loadeddata', initVideo);
+        if (video.readyState >= 2) prime();
+        video.addEventListener("loadeddata", prime);
+        window.addEventListener("touchstart", prime, { once: true });
 
-        const primeTouch = () => initVideo();
-        window.addEventListener('touchstart', primeTouch, { once: true });
-
-        // Auto-play guard (only after priming completes)
-        const guardInterval = setInterval(() => {
-            if (video && !video.paused && primed) {
-                video.pause();
-            }
-        }, 200);
-        const guardTimeout = setTimeout(() => clearInterval(guardInterval), 3000);
+        // Auto-play guard for 3s
+        const guard = setInterval(() => {
+            if (video && !video.paused && primed) video.pause();
+        }, 250);
+        const guardOff = setTimeout(() => clearInterval(guard), 3000);
 
         return () => {
-            video.removeEventListener('loadeddata', initVideo);
-            window.removeEventListener('touchstart', primeTouch);
-            clearInterval(guardInterval);
-            clearTimeout(guardTimeout);
+            video.removeEventListener("loadeddata", prime);
+            window.removeEventListener("touchstart", prime);
+            clearInterval(guard);
+            clearTimeout(guardOff);
         };
     }, []);
 
-    // Main animation loop: intro reverse animation → scroll control
+    // Main loop: intro reverse → scroll control
     useEffect(() => {
         const video = videoRef.current;
         const container = containerRef.current;
-        if (!video || !container) return;
+        if (!video || !container || !isReady) return;
 
         let isActive = true;
         let lastSeekTime = -1;
         const FRAME_DURATION = 1 / 60;
 
+        // Intro state (local to this effect run)
+        let introStartStamp: number | null = null;
+        let introComplete = false;
+        let waitingForData = true;
+
         const tick = (timestamp: number) => {
             if (!isActive) return;
 
-            // PHASE 1: Intro reverse animation (frame 5 → frame 1)
-            if (!introCompleteRef.current) {
-                if (introStartTimeRef.current === null) {
-                    introStartTimeRef.current = timestamp;
+            // ─── PHASE 1: Intro reverse animation ───
+            if (!introComplete) {
+                // Wait until video actually has frame data before starting intro timer
+                if (waitingForData) {
+                    if (video.readyState >= 2) {
+                        waitingForData = false;
+                        // Set video to intro start position
+                        video.currentTime = INTRO_START_TIME;
+                        currentTimeRef.current = INTRO_START_TIME;
+                    } else {
+                        // Not ready yet, keep waiting
+                        rafRef.current = requestAnimationFrame(tick);
+                        return;
+                    }
                 }
 
-                const elapsed = (timestamp - introStartTimeRef.current) / 1000;
+                // Start timer on first data-ready frame
+                if (introStartStamp === null) {
+                    introStartStamp = timestamp;
+                }
+
+                const elapsed = (timestamp - introStartStamp) / 1000;
                 const t = Math.min(1, elapsed / INTRO_DURATION);
 
-                // Ease-out curve for smooth deceleration
+                // Cubic ease-out for smooth deceleration
                 const eased = 1 - Math.pow(1 - t, 3);
-
-                // Interpolate from INTRO_START_TIME → 0
                 const introTime = INTRO_START_TIME * (1 - eased);
 
-                if (video.readyState >= 2) {
-                    video.currentTime = introTime;
-                    currentTimeRef.current = introTime;
-                }
+                video.currentTime = introTime;
+                currentTimeRef.current = introTime;
 
                 if (t >= 1) {
-                    introCompleteRef.current = true;
+                    introComplete = true;
                     currentTimeRef.current = 0;
                     video.currentTime = 0;
                 }
@@ -136,7 +139,7 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
                 return;
             }
 
-            // PHASE 2: Scroll-controlled video
+            // ─── PHASE 2: Scroll-controlled video ───
             const rect = container.getBoundingClientRect();
             const scrollRange = rect.height - window.innerHeight;
 
@@ -188,7 +191,11 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
                     style={{ pointerEvents: "none" }}
                     initial={{ scale: 1.15, filter: "blur(10px)", opacity: 0 }}
                     animate={isReady ? { scale: 1, filter: "blur(0px)", opacity: 1 } : {}}
-                    transition={{ duration: 2.0, ease: [0.25, 0.1, 0.25, 1] }}
+                    transition={{
+                        scale: { duration: 2.0, ease: [0.25, 0.1, 0.25, 1] },
+                        filter: { duration: 2.0, ease: [0.25, 0.1, 0.25, 1] },
+                        opacity: { duration: 0.6, ease: "easeOut" },
+                    }}
                 />
             </div>
         </div>
