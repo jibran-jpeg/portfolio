@@ -11,7 +11,9 @@ export default function SmoothScrolling({
     useEffect(() => {
         // Initialize Lenis for buttery smooth page scrolling
         const lenis = new Lenis({
-            lerp: 0.1, // Smooth but responsive
+            lerp: 0.05, // Lower value = smoother & more "floaty" inertia
+            wheelMultiplier: 1,
+            smoothWheel: true,
         });
 
         function raf(time: number) {
