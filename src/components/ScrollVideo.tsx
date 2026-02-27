@@ -181,7 +181,7 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
 
     return (
         <div ref={containerRef} className="relative h-[800vh] w-full bg-[#0a0a0a]">
-            <div className="sticky top-0 h-[100lvh] w-full overflow-hidden">
+            <div className="sticky top-0 h-screen-fixed w-full overflow-hidden">
                 <motion.video
                     ref={videoRef}
                     src={`${basePath}/hero.mp4`}

@@ -55,7 +55,7 @@ export default function Home() {
         <ScrollVideo onReady={handleVideoReady} />
 
         <div className="absolute top-0 left-0 right-0 h-full pointer-events-none">
-          <div className="sticky top-0 h-[100lvh] w-full overflow-hidden z-10 flex flex-col justify-center">
+          <div className="sticky top-0 h-screen-fixed w-full overflow-hidden z-10 flex flex-col justify-center">
             <Overlay progress={scrollYProgress} revealed={revealed} />
           </div>
         </div>
