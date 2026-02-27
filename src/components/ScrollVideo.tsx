@@ -40,48 +40,57 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
         return () => clearTimeout(fallbackTimer);
     }, [handleCanPlay]);
 
-    // iOS/Mobile video initialization workaround
-    const isPrimingRef = useRef(false);
-
+    // iOS/Mobile video initialization — prime for seeking + force first frame render
     useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
 
-        // Safety net: if the video ever starts playing on its own (not during priming),
-        // pause it immediately. This video is scroll-controlled only.
-        const handlePlaying = () => {
-            if (!isPrimingRef.current) {
+        let primingInProgress = false;
+        let primed = false;
+
+        const initVideo = () => {
+            if (primingInProgress || primed) return;
+            primingInProgress = true;
+
+            // Prime: play then immediately pause (needed for iOS seeking to work)
+            video.play().then(() => {
                 video.pause();
-            }
-        };
-        video.addEventListener('playing', handlePlaying);
-
-        const primeVideo = () => {
-            if (video.paused) {
-                isPrimingRef.current = true;
-                video.play().then(() => {
-                    video.pause();
-                    // Seek to a tiny offset to force the first frame to render on mobile
-                    video.currentTime = 0.001;
-                    isPrimingRef.current = false;
-                }).catch(() => {
-                    isPrimingRef.current = false;
-                });
-            }
-            window.removeEventListener('touchstart', primeTouch);
+                // Seek to a small offset to force the first frame to actually render
+                video.currentTime = 0.01;
+                primed = true;
+                primingInProgress = false;
+            }).catch(() => {
+                // Autoplay blocked — just try seeking directly
+                video.currentTime = 0.01;
+                primed = true;
+                primingInProgress = false;
+            });
         };
 
-        const primeTouch = () => primeVideo();
+        // Try to init when we have enough data
+        if (video.readyState >= 2) {
+            initVideo();
+        }
+        video.addEventListener('loadeddata', initVideo);
 
-        // Try to prime immediately (works for muted video on most modern mobiles)
-        primeVideo();
-
-        // Fallback: on first touch interaction
+        // Fallback: on first touch interaction (older iOS)
+        const primeTouch = () => initVideo();
         window.addEventListener('touchstart', primeTouch, { once: true });
 
+        // Auto-play guard: some mobile browsers auto-play muted videos.
+        // Only pauses AFTER priming is complete, so it doesn't block first frame render.
+        const guardInterval = setInterval(() => {
+            if (video && !video.paused && primed) {
+                video.pause();
+            }
+        }, 200);
+        const guardTimeout = setTimeout(() => clearInterval(guardInterval), 3000);
+
         return () => {
-            video.removeEventListener('playing', handlePlaying);
+            video.removeEventListener('loadeddata', initVideo);
             window.removeEventListener('touchstart', primeTouch);
+            clearInterval(guardInterval);
+            clearTimeout(guardTimeout);
         };
     }, []);
 
