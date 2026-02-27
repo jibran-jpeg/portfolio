@@ -198,17 +198,13 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
                     }}
                 />
 
-                {/* Cover for the Veo watermark */}
+                {/* Stealthy soft vignette to naturally hide the Veo watermark without being distracting */}
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={isReady ? { opacity: 1 } : {}}
                     transition={{ duration: 1, delay: 0.5 }}
-                    className="absolute bottom-3 right-3 sm:bottom-6 sm:right-6 z-20 flex items-center justify-center px-4 py-2 sm:px-5 sm:py-2.5 bg-black/60 backdrop-blur-md border border-white/10 rounded-lg sm:rounded-xl shadow-2xl pointer-events-none select-none"
-                >
-                    <span className="text-white/40 text-[10px] sm:text-xs font-mono tracking-widest uppercase font-medium">
-                        Jibran.AI
-                    </span>
-                </motion.div>
+                    className="absolute -bottom-8 -right-8 z-20 w-56 h-32 bg-[#0a0a0a] blur-[30px] pointer-events-none"
+                />
             </div>
         </div>
     );
