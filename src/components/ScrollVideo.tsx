@@ -45,10 +45,19 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
         const video = videoRef.current;
         if (!video) return;
 
+        // Safety net: if the video ever starts playing on its own, pause it immediately.
+        // This video is scroll-controlled only — it should never auto-play.
+        const handlePlaying = () => {
+            video.pause();
+        };
+        video.addEventListener('playing', handlePlaying);
+
         const primeVideo = () => {
             if (video.paused) {
                 video.play().then(() => {
+                    // Immediately pause after priming for iOS seeking
                     video.pause();
+                    video.currentTime = 0;
                 }).catch(() => {
                     // Ignore autoplay errors
                 });
@@ -65,6 +74,7 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
         window.addEventListener('touchstart', primeTouch, { once: true });
 
         return () => {
+            video.removeEventListener('playing', handlePlaying);
             window.removeEventListener('touchstart', primeTouch);
         };
     }, []);
