@@ -28,30 +28,6 @@ export default function Home() {
     window.scrollTo(0, 0);
   }, []);
 
-  const [fixedHeight, setFixedHeight] = useState("100vh");
-
-  // Lock overlay height to match video container precisely
-  useEffect(() => {
-    const updateHeight = () => {
-      if (window.innerWidth < 1024) {
-        setFixedHeight(`${window.screen.height}px`);
-      } else {
-        setFixedHeight("100vh");
-      }
-    };
-    updateHeight();
-
-    let lastW = window.innerWidth;
-    const resize = () => {
-      if (window.innerWidth !== lastW) {
-        lastW = window.innerWidth;
-        updateHeight();
-      }
-    };
-    window.addEventListener("resize", resize);
-    return () => window.removeEventListener("resize", resize);
-  }, []);
-
   const handleVideoReady = useCallback(() => {
     setVideoReady(true);
   }, []);
@@ -79,7 +55,7 @@ export default function Home() {
         <ScrollVideo onReady={handleVideoReady} />
 
         <div className="absolute top-0 left-0 right-0 h-full pointer-events-none">
-          <div className="sticky top-0 w-full overflow-hidden z-10 flex flex-col justify-center" style={{ height: fixedHeight }}>
+          <div className="sticky top-0 h-[100dvh] w-full overflow-hidden z-10 flex flex-col justify-center transition-[height] duration-500 ease-out">
             <Overlay progress={scrollYProgress} revealed={revealed} />
           </div>
         </div>
