@@ -5,6 +5,11 @@ import { motion } from "framer-motion";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
+// Starting frame offset for the intro reverse animation (~5 frames at 24fps)
+const INTRO_START_TIME = 0.2;
+// Duration of the reverse intro animation in seconds (synced with reveal animation)
+const INTRO_DURATION = 2.0;
+
 interface ScrollVideoProps {
     onReady?: () => void;
 }
@@ -14,7 +19,9 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const [isReady, setIsReady] = useState(false);
     const rafRef = useRef<number>(0);
-    const currentTimeRef = useRef(0);
+    const currentTimeRef = useRef(INTRO_START_TIME);
+    const introCompleteRef = useRef(false);
+    const introStartTimeRef = useRef<number | null>(null);
 
     // Wait until enough data is buffered for smooth seeking
     const handleCanPlay = useCallback(() => {
@@ -26,13 +33,10 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
 
     // Safety check for cached videos
     useEffect(() => {
-        // readyState >= 2 (HAVE_CURRENT_DATA) is enough to show the first frame visually
         if (videoRef.current && videoRef.current.readyState >= 2) {
             handleCanPlay();
         }
 
-        // Fallback: if video events don't fire for some reason (e.g. error, stuck loading),
-        // let the page proceed after 3.5 seconds
         const fallbackTimer = setTimeout(() => {
             handleCanPlay();
         }, 3500);
@@ -40,7 +44,7 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
         return () => clearTimeout(fallbackTimer);
     }, [handleCanPlay]);
 
-    // iOS/Mobile video initialization — prime for seeking + force first frame render
+    // iOS/Mobile video initialization — prime for seeking + show starting frame
     useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
@@ -52,33 +56,28 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
             if (primingInProgress || primed) return;
             primingInProgress = true;
 
-            // Prime: play then immediately pause (needed for iOS seeking to work)
             video.play().then(() => {
                 video.pause();
-                // Seek to a small offset to force the first frame to actually render
-                video.currentTime = 0.01;
+                // Start at frame ~5 for the reverse intro animation
+                video.currentTime = INTRO_START_TIME;
                 primed = true;
                 primingInProgress = false;
             }).catch(() => {
-                // Autoplay blocked — just try seeking directly
-                video.currentTime = 0.01;
+                video.currentTime = INTRO_START_TIME;
                 primed = true;
                 primingInProgress = false;
             });
         };
 
-        // Try to init when we have enough data
         if (video.readyState >= 2) {
             initVideo();
         }
         video.addEventListener('loadeddata', initVideo);
 
-        // Fallback: on first touch interaction (older iOS)
         const primeTouch = () => initVideo();
         window.addEventListener('touchstart', primeTouch, { once: true });
 
-        // Auto-play guard: some mobile browsers auto-play muted videos.
-        // Only pauses AFTER priming is complete, so it doesn't block first frame render.
+        // Auto-play guard (only after priming completes)
         const guardInterval = setInterval(() => {
             if (video && !video.paused && primed) {
                 video.pause();
@@ -94,23 +93,53 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
         };
     }, []);
 
+    // Main animation loop: intro reverse animation → scroll control
     useEffect(() => {
         const video = videoRef.current;
         const container = containerRef.current;
         if (!video || !container) return;
 
         let isActive = true;
-
         let lastSeekTime = -1;
-        const FRAME_DURATION = 1 / 60; // 60fps interpolated video
+        const FRAME_DURATION = 1 / 60;
 
-        const tick = () => {
+        const tick = (timestamp: number) => {
             if (!isActive) return;
 
+            // PHASE 1: Intro reverse animation (frame 5 → frame 1)
+            if (!introCompleteRef.current) {
+                if (introStartTimeRef.current === null) {
+                    introStartTimeRef.current = timestamp;
+                }
+
+                const elapsed = (timestamp - introStartTimeRef.current) / 1000;
+                const t = Math.min(1, elapsed / INTRO_DURATION);
+
+                // Ease-out curve for smooth deceleration
+                const eased = 1 - Math.pow(1 - t, 3);
+
+                // Interpolate from INTRO_START_TIME → 0
+                const introTime = INTRO_START_TIME * (1 - eased);
+
+                if (video.readyState >= 2) {
+                    video.currentTime = introTime;
+                    currentTimeRef.current = introTime;
+                }
+
+                if (t >= 1) {
+                    introCompleteRef.current = true;
+                    currentTimeRef.current = 0;
+                    video.currentTime = 0;
+                }
+
+                rafRef.current = requestAnimationFrame(tick);
+                return;
+            }
+
+            // PHASE 2: Scroll-controlled video
             const rect = container.getBoundingClientRect();
             const scrollRange = rect.height - window.innerHeight;
 
-            // SCROLL PHASE: Interpolate based on scroll position
             if (scrollRange > 0 && rect.bottom > 0 && rect.top < window.innerHeight) {
                 const progress = Math.max(0, Math.min(1, -rect.top / scrollRange));
                 const targetTime = progress * (video.duration || 0);
@@ -133,7 +162,6 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
 
             rafRef.current = requestAnimationFrame(tick);
         };
-
 
         rafRef.current = requestAnimationFrame(tick);
 
