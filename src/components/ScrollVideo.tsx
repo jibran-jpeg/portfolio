@@ -33,15 +33,19 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
         const video = videoRef.current;
         if (!video) return;
 
+        let readyTimer: NodeJS.Timeout | null = null;
         if (video.readyState >= 2) {
-            handleCanPlay();
+            readyTimer = setTimeout(() => handleCanPlay(), 0);
         }
 
         const fallbackTimer = setTimeout(() => {
             handleCanPlay();
         }, 3500);
 
-        return () => clearTimeout(fallbackTimer);
+        return () => {
+            if (readyTimer) clearTimeout(readyTimer);
+            clearTimeout(fallbackTimer);
+        };
     }, [handleCanPlay]);
 
     // iOS/Mobile: prime video for seeking
@@ -102,24 +106,25 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
             if (!introComplete) {
                 // Wait until video actually has frame data before starting intro timer
                 if (waitingForData) {
-                    if (video.readyState >= 2) {
+                    // Start intro immediately if ready, or force start after 1.5s fallback
+                    if (video.readyState >= 2 || (timestamp - (introStartStamp || timestamp) > 1500)) {
                         waitingForData = false;
-                        // Set video to intro start position
+                        // Reset introStartStamp so the timeline starts fresh from this moment
+                        introStartStamp = timestamp;
                         video.currentTime = INTRO_START_TIME;
                         currentTimeRef.current = INTRO_START_TIME;
                     } else {
-                        // Not ready yet, keep waiting
+                        // Track when we started waiting
+                        if (introStartStamp === null) {
+                            introStartStamp = timestamp;
+                        }
                         rafRef.current = requestAnimationFrame(tick);
                         return;
                     }
                 }
 
-                // Start timer on first data-ready frame
-                if (introStartStamp === null) {
-                    introStartStamp = timestamp;
-                }
-
-                const elapsed = (timestamp - introStartStamp) / 1000;
+                // Normal intro timing elapsed check
+                const elapsed = (timestamp - (introStartStamp as number)) / 1000;
                 const t = Math.min(1, elapsed / INTRO_DURATION);
 
                 // Cubic ease-out for smooth deceleration
@@ -180,6 +185,7 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
                 <motion.video
                     ref={videoRef}
                     src={`${basePath}/hero.mp4`}
+                    autoPlay
                     muted
                     playsInline
                     preload="auto"

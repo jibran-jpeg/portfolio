@@ -57,7 +57,8 @@ export default function PageReveal({ isLoaded = false, onComplete }: PageRevealP
     // If loaded before intro finishes, skip to done after intro
     useEffect(() => {
         if (isLoaded && phase === "loading" && fakeProgress < 30) {
-            setFakeProgress(90);
+            const t = setTimeout(() => setFakeProgress(90), 0);
+            return () => clearTimeout(t);
         }
     }, [isLoaded, phase, fakeProgress]);
 
