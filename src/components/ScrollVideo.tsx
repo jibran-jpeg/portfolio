@@ -17,6 +17,7 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
     const [isReady, setIsReady] = useState(false);
+    const [fixedHeight, setFixedHeight] = useState("100vh");
     const rafRef = useRef<number>(0);
     const currentTimeRef = useRef(0);
 
@@ -87,6 +88,28 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
             clearInterval(guard);
             clearTimeout(guardOff);
         };
+    }, []);
+
+    // Defeat 100vh toolbar collapse jump by locking physical pixels
+    useEffect(() => {
+        const updateHeight = () => {
+            if (window.innerWidth < 1024) {
+                setFixedHeight(`${window.screen.height}px`);
+            } else {
+                setFixedHeight("100vh");
+            }
+        };
+        updateHeight();
+
+        let lastW = window.innerWidth;
+        const resize = () => {
+            if (window.innerWidth !== lastW) {
+                lastW = window.innerWidth;
+                updateHeight();
+            }
+        };
+        window.addEventListener("resize", resize);
+        return () => window.removeEventListener("resize", resize);
     }, []);
 
     // Main loop: intro reverse → scroll control
@@ -196,7 +219,7 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
 
     return (
         <div ref={containerRef} className="relative h-[800vh] w-full bg-[#0a0a0a]">
-            <div className="sticky top-0 h-[100lvh] w-full overflow-hidden">
+            <div className="sticky top-0 w-full overflow-hidden" style={{ height: fixedHeight }}>
                 <motion.video
                     ref={videoRef}
                     src={`${basePath}/hero.mp4`}
