@@ -11,7 +11,7 @@ import PageReveal from "@/components/PageReveal";
 import SectionReveal from "@/components/SectionReveal";
 
 export default function Home() {
-
+  const [videoReady, setVideoReady] = useState(false);
   const [revealed, setRevealed] = useState(false);
 
   const heroRef = useRef<HTMLDivElement>(null);
@@ -28,7 +28,9 @@ export default function Home() {
     window.scrollTo(0, 0);
   }, []);
 
-
+  const handleVideoReady = useCallback(() => {
+    setVideoReady(true);
+  }, []);
 
   const handleRevealComplete = useCallback(() => {
     setRevealed(true);
@@ -37,7 +39,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-[#121212] selection:bg-white/30 selection:text-white">
       {/* Page load reveal animation — waits for video to load */}
-      <PageReveal isLoaded={true} onComplete={handleRevealComplete} />
+      <PageReveal isLoaded={videoReady} onComplete={handleRevealComplete} />
 
       {/* Navbar appears immediately after reveal, no animation */}
       {revealed && <Navbar />}
@@ -50,7 +52,7 @@ export default function Home() {
         animate={revealed ? { opacity: 1 } : {}}
         transition={{ duration: 0.4, ease: "easeOut" }}
       >
-        <ScrollVideo />
+        <ScrollVideo onReady={handleVideoReady} />
 
         <div className="absolute top-0 left-0 right-0 h-full pointer-events-none">
           <div className="sticky top-0 h-[100lvh] w-full overflow-hidden z-10 flex flex-col justify-center">
