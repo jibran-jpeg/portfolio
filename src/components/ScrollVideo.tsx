@@ -198,12 +198,12 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
                     }}
                 />
 
-                {/* Stealthy soft vignette to naturally hide the Veo watermark without being distracting */}
+                {/* Stealthy shadow gradient to perfectly blend and hide the Veo watermark */}
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={isReady ? { opacity: 1 } : {}}
                     transition={{ duration: 1, delay: 0.5 }}
-                    className="absolute -bottom-8 -right-8 z-20 w-56 h-32 bg-[#0a0a0a] blur-[30px] pointer-events-none"
+                    className="absolute bottom-0 right-0 z-20 w-56 h-32 bg-gradient-to-tl from-[#050505] via-[#0a0a0a]/60 to-transparent pointer-events-none"
                 />
             </div>
         </div>
