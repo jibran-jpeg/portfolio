@@ -189,8 +189,8 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
                     onError={handleCanPlay}
                     className="absolute inset-0 w-full h-full object-cover z-0"
                     style={{ pointerEvents: "none" }}
-                    initial={{ scale: 1.15, filter: "blur(10px)", opacity: 0 }}
-                    animate={isReady ? { scale: 1, filter: "blur(0px)", opacity: 1 } : {}}
+                    initial={{ scale: 1.20, filter: "blur(10px)", opacity: 0 }}
+                    animate={isReady ? { scale: 1.08, filter: "blur(0px)", opacity: 1 } : {}}
                     transition={{
                         scale: { duration: 2.0, ease: [0.25, 0.1, 0.25, 1] },
                         filter: { duration: 2.0, ease: [0.25, 0.1, 0.25, 1] },
