@@ -41,25 +41,31 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
     }, [handleCanPlay]);
 
     // iOS/Mobile video initialization workaround
+    const isPrimingRef = useRef(false);
+
     useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
 
-        // Safety net: if the video ever starts playing on its own, pause it immediately.
-        // This video is scroll-controlled only — it should never auto-play.
+        // Safety net: if the video ever starts playing on its own (not during priming),
+        // pause it immediately. This video is scroll-controlled only.
         const handlePlaying = () => {
-            video.pause();
+            if (!isPrimingRef.current) {
+                video.pause();
+            }
         };
         video.addEventListener('playing', handlePlaying);
 
         const primeVideo = () => {
             if (video.paused) {
+                isPrimingRef.current = true;
                 video.play().then(() => {
-                    // Immediately pause after priming for iOS seeking
                     video.pause();
-                    video.currentTime = 0;
+                    // Seek to a tiny offset to force the first frame to render on mobile
+                    video.currentTime = 0.001;
+                    isPrimingRef.current = false;
                 }).catch(() => {
-                    // Ignore autoplay errors
+                    isPrimingRef.current = false;
                 });
             }
             window.removeEventListener('touchstart', primeTouch);
