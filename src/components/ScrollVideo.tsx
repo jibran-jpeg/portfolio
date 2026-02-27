@@ -189,14 +189,26 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
                     onError={handleCanPlay}
                     className="absolute inset-0 w-full h-full object-cover z-0"
                     style={{ pointerEvents: "none" }}
-                    initial={{ scale: 1.20, filter: "blur(10px)", opacity: 0 }}
-                    animate={isReady ? { scale: 1.08, filter: "blur(0px)", opacity: 1 } : {}}
+                    initial={{ scale: 1.15, filter: "blur(10px)", opacity: 0 }}
+                    animate={isReady ? { scale: 1, filter: "blur(0px)", opacity: 1 } : {}}
                     transition={{
                         scale: { duration: 2.0, ease: [0.25, 0.1, 0.25, 1] },
                         filter: { duration: 2.0, ease: [0.25, 0.1, 0.25, 1] },
                         opacity: { duration: 0.6, ease: "easeOut" },
                     }}
                 />
+
+                {/* Cover for the Veo watermark */}
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={isReady ? { opacity: 1 } : {}}
+                    transition={{ duration: 1, delay: 0.5 }}
+                    className="absolute bottom-3 right-3 sm:bottom-6 sm:right-6 z-20 flex items-center justify-center px-4 py-2 sm:px-5 sm:py-2.5 bg-black/60 backdrop-blur-md border border-white/10 rounded-lg sm:rounded-xl shadow-2xl pointer-events-none select-none"
+                >
+                    <span className="text-white/40 text-[10px] sm:text-xs font-mono tracking-widest uppercase font-medium">
+                        Jibran.AI
+                    </span>
+                </motion.div>
             </div>
         </div>
     );
