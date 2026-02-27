@@ -32,6 +32,13 @@ const PROJECTS = [
         description: "Developing complex n8n workflows connecting AI agents with databases, CRMs, and social media platforms for Fiverr clients.",
         link: "https://github.com/jibran-jpeg",
     },
+    {
+        id: 5,
+        title: "PK Tours",
+        category: "Web Development",
+        description: "Premium trekking expeditions through Northern Pakistan's Karakoram range. Designed and developed to showcase Hunza, Skardu, Gilgit, and beyond.",
+        link: "https://jibran-jpeg.github.io/pk-tours/",
+    },
 ];
 
 const SKILLS = [
