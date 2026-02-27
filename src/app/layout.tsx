@@ -35,26 +35,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className={`${sora.variable} ${dmSans.variable}`}>
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              function setVh() {
-                let vh = window.innerHeight * 0.01;
-                document.documentElement.style.setProperty('--vh', \`\${vh}px\`);
-              }
-              setVh();
-              let lastWidth = window.innerWidth;
-              window.addEventListener('resize', () => {
-                if (window.innerWidth !== lastWidth) {
-                  lastWidth = window.innerWidth;
-                  setVh();
-                }
-              });
-            `,
-          }}
-        />
-      </head>
       <body className="font-sans antialiased text-white bg-[#121212]">
         <SmoothScrolling>
           {children}

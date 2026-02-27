@@ -26,12 +26,6 @@ html {
   overflow-x: visible;
 }
 
-/* Custom strictly fixed viewport height utility to fix Mobile iOS 100vh scaling bug */
-.h-screen-fixed {
-  height: 100vh; /* Fallback for browsers without JS */
-  height: calc(var(--vh, 1vh) * 100);
-}
-
 /* Hide scrollbar for a cleaner look but keep scrolling functional */
 ::-webkit-scrollbar {
   width: 0px;

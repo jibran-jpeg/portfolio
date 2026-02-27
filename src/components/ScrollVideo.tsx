@@ -58,11 +58,16 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
         const prime = () => {
             if (primed) return;
             primed = true;
+
+            // Save current time so we don't cause a visual jump
+            const current = video.currentTime;
+            const target = current > 0 ? current : INTRO_START_TIME;
+
             video.play().then(() => {
                 video.pause();
-                video.currentTime = INTRO_START_TIME;
+                video.currentTime = target;
             }).catch(() => {
-                video.currentTime = INTRO_START_TIME;
+                video.currentTime = target;
             });
         };
 
@@ -99,8 +104,18 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
         let introComplete = false;
         let waitingForData = true;
 
+        // Cache viewport to prevent jumping when mobile navigation bars hide/show
+        let cachedViewportW = window.innerWidth;
+        let cachedViewportH = window.innerHeight;
+
         const tick = (timestamp: number) => {
             if (!isActive) return;
+
+            // Only update viewport cache on orientation change (width change), ignoring toolbar collapse.
+            if (window.innerWidth !== cachedViewportW) {
+                cachedViewportW = window.innerWidth;
+                cachedViewportH = window.innerHeight;
+            }
 
             // ─── PHASE 1: Intro reverse animation ───
             if (!introComplete) {
@@ -146,9 +161,9 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
 
             // ─── PHASE 2: Scroll-controlled video ───
             const rect = container.getBoundingClientRect();
-            const scrollRange = rect.height - window.innerHeight;
+            const scrollRange = rect.height - cachedViewportH;
 
-            if (scrollRange > 0 && rect.bottom > 0 && rect.top < window.innerHeight) {
+            if (scrollRange > 0 && rect.bottom > 0 && rect.top < cachedViewportH) {
                 const progress = Math.max(0, Math.min(1, -rect.top / scrollRange));
                 const targetTime = progress * (video.duration || 0);
 
@@ -181,7 +196,7 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
 
     return (
         <div ref={containerRef} className="relative h-[800vh] w-full bg-[#0a0a0a]">
-            <div className="sticky top-0 h-screen-fixed w-full overflow-hidden">
+            <div className="sticky top-0 h-[100lvh] w-full overflow-hidden">
                 <motion.video
                     ref={videoRef}
                     src={`${basePath}/hero.mp4`}
