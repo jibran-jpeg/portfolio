@@ -27,11 +27,11 @@ const DESKTOP = {
     USE_FAST_SEEK: false,
 };
 const MOBILE = {
-    LERP: 0.7,                          // much bigger jumps → far fewer seeks for smoothness
-    MIN_SEEK_DELTA: 1 / 15,            // only seek when delta is meaningful
-    SEEK_THROTTLE_MS: 80,              // throttle to ~12 seeks/s — sweet spot for mobile decoders
+    LERP: 0.5,                          // balanced: smooth interpolation without too many seeks
+    MIN_SEEK_DELTA: 1 / 24,            // only seek when delta is meaningful (~24fps worth)
+    SEEK_THROTTLE_MS: 50,              // throttle to ~20 seeks/s
     INTRO_ENABLED: false,               // skip reverse-seek intro on mobile
-    USE_FAST_SEEK: true,                // use fastSeek() for instant nearest-keyframe jump
+    USE_FAST_SEEK: false,               // disabled: fastSeek jumps to distant keyframes causing choppiness
 };
 
 interface ScrollVideoProps {
@@ -139,13 +139,9 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
         let lastSeekTimestamp = 0;
         const FRAME_DURATION = 1 / 60;
 
-        // Helper to seek: use fastSeek on mobile for instant keyframe jump
+        // Seek helper — always use currentTime for frame-accurate seeking
         const seekVideo = (time: number) => {
-            if (cfg.USE_FAST_SEEK && typeof video.fastSeek === "function") {
-                video.fastSeek(time);
-            } else {
-                video.currentTime = time;
-            }
+            video.currentTime = time;
         };
 
         // ─── Track scroll progress via passive scroll listener (cheaper than polling getBoundingClientRect) ───
@@ -180,18 +176,8 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
         let cachedViewportW = window.innerWidth;
         let cachedViewportH = window.innerHeight;
 
-        // Frame counter for skipping on mobile
-        let frameCount = 0;
-
         const tick = (timestamp: number) => {
             if (!isActive) return;
-            frameCount++;
-
-            // On mobile: only process every other rAF frame to halve CPU/GPU pressure
-            if (mobile && frameCount % 2 !== 0 && introComplete) {
-                rafRef.current = requestAnimationFrame(tick);
-                return;
-            }
 
             // Only update viewport cache on orientation change (width change)
             if (window.innerWidth !== cachedViewportW) {
@@ -286,7 +272,7 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
                     onCanPlay={handleCanPlay}
                     onLoadedData={handleCanPlay}
                     onError={handleCanPlay}
-                    className="absolute inset-0 w-full h-full object-cover z-0"
+                    className="absolute inset-0 w-full h-full object-cover z-0 hero-video"
                     style={{
                         pointerEvents: "none",
                         willChange: "transform",
