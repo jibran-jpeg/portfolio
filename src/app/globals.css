@@ -19,11 +19,11 @@ body {
   font-family: inherit;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: clip;
+  overflow-x: hidden;
 }
 
 html {
-  overflow-x: visible;
+  overflow-x: hidden;
 }
 
 /* Hide scrollbar for a cleaner look but keep scrolling functional */
