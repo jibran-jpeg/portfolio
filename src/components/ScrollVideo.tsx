@@ -263,6 +263,7 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
             <div className="sticky top-0 h-[100dvh] w-full overflow-hidden transition-[height] duration-500 ease-out">
                 <motion.video
                     ref={videoRef}
+                    src={`${basePath}/hero.mp4`}
                     autoPlay
                     muted
                     playsInline
@@ -295,10 +296,7 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
                             opacity: { duration: 0.6, ease: "easeOut" },
                         }
                     }
-                >
-                    <source src={`${basePath}/hero-mobile.mp4`} media="(max-width: 768px)" type="video/mp4" />
-                    <source src={`${basePath}/hero.mp4`} media="(min-width: 769px)" type="video/mp4" />
-                </motion.video>
+                />
                 {/* Invisible overlay to absolutely prevent touch/tap events from reaching the video and showing the play button */}
                 <div className="absolute inset-0 z-10 w-full h-full bg-transparent touch-none select-none" />
             </div>
