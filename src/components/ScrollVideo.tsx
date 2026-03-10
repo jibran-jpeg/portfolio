@@ -9,6 +9,27 @@ const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 const INTRO_START_TIME = 1.0;
 const INTRO_DURATION = 2.5; // seconds
 
+// ─── Mobile detection helper ───
+const isMobileDevice = () => {
+    if (typeof window === "undefined") return false;
+    return (
+        window.matchMedia("(max-width: 768px)").matches ||
+        /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+    );
+};
+
+// ─── Performance tuning per device ───
+const DESKTOP = {
+    LERP: 0.35,
+    MIN_SEEK_DELTA: (1 / 60) * 0.5,   // seek every ~half frame at 60fps
+    INTRO_ENABLED: true,
+};
+const MOBILE = {
+    LERP: 0.55,                         // bigger jumps → fewer seeks
+    MIN_SEEK_DELTA: 1 / 20,            // throttle to ~20 seeks/s max
+    INTRO_ENABLED: false,               // skip reverse-seek intro on mobile
+};
+
 interface ScrollVideoProps {
     onReady?: () => void;
 }
@@ -53,15 +74,20 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
         const video = videoRef.current;
         if (!video) return;
 
+        const mobile = isMobileDevice();
         let primed = false;
 
         const prime = () => {
             if (primed) return;
             primed = true;
 
-            // Save current time so we don't cause a visual jump
+            // On mobile with intro disabled, prime to time 0 instead of INTRO_START_TIME
             const current = video.currentTime;
-            const target = current > 0 ? current : INTRO_START_TIME;
+            const target = mobile
+                ? 0
+                : current > 0
+                    ? current
+                    : INTRO_START_TIME;
 
             video.play().then(() => {
                 video.pause();
@@ -95,14 +121,24 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
         const container = containerRef.current;
         if (!video || !container || !isReady) return;
 
+        const mobile = isMobileDevice();
+        const cfg = mobile ? MOBILE : DESKTOP;
+
         let isActive = true;
         let lastSeekTime = -1;
+        let lastSeekTimestamp = 0; // throttle by wall-clock time on mobile
         const FRAME_DURATION = 1 / 60;
 
         // Intro state (local to this effect run)
         let introStartStamp: number | null = null;
-        let introComplete = false;
-        let waitingForData = true;
+        let introComplete = !cfg.INTRO_ENABLED; // skip intro on mobile
+        let waitingForData = cfg.INTRO_ENABLED;
+
+        // If intro skipped, start at time 0
+        if (!cfg.INTRO_ENABLED) {
+            currentTimeRef.current = 0;
+            video.currentTime = 0;
+        }
 
         // Cache viewport to prevent jumping when mobile navigation bars hide/show
         let cachedViewportW = window.innerWidth;
@@ -117,7 +153,7 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
                 cachedViewportH = window.innerHeight;
             }
 
-            // ─── PHASE 1: Intro reverse animation ───
+            // ─── PHASE 1: Intro reverse animation (desktop only) ───
             if (!introComplete) {
                 // Wait until video actually has frame data before starting intro timer
                 if (waitingForData) {
@@ -173,13 +209,18 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
                 if (absDiff < FRAME_DURATION) {
                     currentTimeRef.current = targetTime;
                 } else {
-                    currentTimeRef.current += diff * 0.35;
+                    currentTimeRef.current += diff * cfg.LERP;
                 }
 
                 const seekDelta = Math.abs(currentTimeRef.current - lastSeekTime);
-                if (seekDelta >= FRAME_DURATION * 0.5 && video.readyState >= 2) {
+                // On mobile, also throttle by wall-clock time (50ms = ~20fps)
+                const timeSinceLast = timestamp - lastSeekTimestamp;
+                const timeOk = mobile ? timeSinceLast >= 50 : true;
+
+                if (seekDelta >= cfg.MIN_SEEK_DELTA && video.readyState >= 2 && timeOk) {
                     video.currentTime = currentTimeRef.current;
                     lastSeekTime = currentTimeRef.current;
+                    lastSeekTimestamp = timestamp;
                 }
             }
 
@@ -193,6 +234,8 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
             cancelAnimationFrame(rafRef.current);
         };
     }, [isReady]);
+
+    const mobile = typeof window !== "undefined" && isMobileDevice();
 
     return (
         <div ref={containerRef} className="relative h-[800vh] w-full bg-[#0a0a0a]">
@@ -209,14 +252,29 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
                     onLoadedData={handleCanPlay}
                     onError={handleCanPlay}
                     className="absolute inset-0 w-full h-full object-cover z-0"
-                    style={{ pointerEvents: "none" }}
-                    initial={{ scale: 1.15, filter: "blur(10px)", opacity: 0 }}
-                    animate={isReady ? { scale: 1, filter: "blur(0px)", opacity: 1 } : {}}
-                    transition={{
-                        scale: { duration: 2.0, ease: [0.25, 0.1, 0.25, 1] },
-                        filter: { duration: 2.0, ease: [0.25, 0.1, 0.25, 1] },
-                        opacity: { duration: 0.6, ease: "easeOut" },
+                    style={{
+                        pointerEvents: "none",
+                        willChange: "transform",           // GPU compositing hint
+                        transform: "translateZ(0)",         // force GPU layer
                     }}
+                    initial={mobile
+                        ? { opacity: 0 }                    // simpler animation on mobile (no blur)
+                        : { scale: 1.15, filter: "blur(10px)", opacity: 0 }
+                    }
+                    animate={isReady
+                        ? mobile
+                            ? { opacity: 1 }
+                            : { scale: 1, filter: "blur(0px)", opacity: 1 }
+                        : {}
+                    }
+                    transition={mobile
+                        ? { opacity: { duration: 0.8, ease: "easeOut" } }
+                        : {
+                            scale: { duration: 2.0, ease: [0.25, 0.1, 0.25, 1] },
+                            filter: { duration: 2.0, ease: [0.25, 0.1, 0.25, 1] },
+                            opacity: { duration: 0.6, ease: "easeOut" },
+                        }
+                    }
                 />
             </div>
         </div>
