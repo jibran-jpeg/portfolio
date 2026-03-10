@@ -267,7 +267,7 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
                     }
                     animate={isReady
                         ? isMobile
-                            ? { opacity: 1 }
+                            ? { opacity: 1, scale: 1, filter: "none" }  // clear SSR desktop initial
                             : { scale: 1, filter: "blur(0px)", opacity: 1 }
                         : {}
                     }
