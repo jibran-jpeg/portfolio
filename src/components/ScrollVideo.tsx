@@ -265,8 +265,12 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
                     ref={videoRef}
                     src={`${basePath}/hero.mp4`}
                     autoPlay
+                    controls={false}
+                    disablePictureInPicture
+                    disableRemotePlayback
                     muted
                     playsInline
+                    tabIndex={-1}
                     preload="auto"
                     onCanPlayThrough={handleCanPlay}
                     onCanPlay={handleCanPlay}
