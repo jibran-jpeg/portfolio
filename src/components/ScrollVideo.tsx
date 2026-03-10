@@ -99,11 +99,14 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
                     ? current
                     : INTRO_START_TIME;
 
-            video.play().then(() => {
+            // Safari/Chrome mobile play button hack: keep video "playing" but at 0 speed.
+            // This prevents the OS from natively injecting a large play button on a "paused" video.
+            video.playbackRate = 0;
+            video.currentTime = target;
+
+            video.play().catch(() => {
+                // If play() is blocked, we still fallback to scrubbing paused
                 video.pause();
-                video.currentTime = target;
-            }).catch(() => {
-                video.currentTime = target;
             });
         };
 
@@ -111,17 +114,9 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
         video.addEventListener("loadeddata", prime);
         window.addEventListener("touchstart", prime, { once: true });
 
-        // Auto-play guard for 3s
-        const guard = setInterval(() => {
-            if (video && !video.paused && primed) video.pause();
-        }, 250);
-        const guardOff = setTimeout(() => clearInterval(guard), 3000);
-
         return () => {
             video.removeEventListener("loadeddata", prime);
             window.removeEventListener("touchstart", prime);
-            clearInterval(guard);
-            clearTimeout(guardOff);
         };
     }, []);
 
