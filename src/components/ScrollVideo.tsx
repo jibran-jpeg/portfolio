@@ -38,8 +38,14 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
     const [isReady, setIsReady] = useState(false);
+    const [isMobile, setIsMobile] = useState(false); // starts false to match SSR
     const rafRef = useRef<number>(0);
     const currentTimeRef = useRef(0);
+
+    // Detect mobile after mount to avoid hydration mismatch
+    useEffect(() => {
+        setIsMobile(isMobileDevice());
+    }, []);
 
     // Signal "ready" to parent (loading screen) when we have enough data
     const handleCanPlay = useCallback(() => {
@@ -235,8 +241,6 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
         };
     }, [isReady]);
 
-    const mobile = typeof window !== "undefined" && isMobileDevice();
-
     return (
         <div ref={containerRef} className="relative h-[800vh] w-full bg-[#0a0a0a]">
             <div className="sticky top-0 h-[100dvh] w-full overflow-hidden transition-[height] duration-500 ease-out">
@@ -257,17 +261,17 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
                         willChange: "transform",           // GPU compositing hint
                         transform: "translateZ(0)",         // force GPU layer
                     }}
-                    initial={mobile
+                    initial={isMobile
                         ? { opacity: 0 }                    // simpler animation on mobile (no blur)
                         : { scale: 1.15, filter: "blur(10px)", opacity: 0 }
                     }
                     animate={isReady
-                        ? mobile
+                        ? isMobile
                             ? { opacity: 1 }
                             : { scale: 1, filter: "blur(0px)", opacity: 1 }
                         : {}
                     }
-                    transition={mobile
+                    transition={isMobile
                         ? { opacity: { duration: 0.8, ease: "easeOut" } }
                         : {
                             scale: { duration: 2.0, ease: [0.25, 0.1, 0.25, 1] },
