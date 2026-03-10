@@ -300,7 +300,7 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
                     }
                 />
                 {/* Invisible overlay to absolutely prevent touch/tap events from reaching the video and showing the play button */}
-                <div className="absolute inset-0 z-10 w-full h-full bg-transparent touch-none select-none" />
+                <div className="absolute inset-0 z-10 w-full h-full bg-transparent select-none pointer-events-none" />
             </div>
         </div>
     );
