@@ -22,12 +22,16 @@ const isMobileDevice = () => {
 const DESKTOP = {
     LERP: 0.35,
     MIN_SEEK_DELTA: (1 / 60) * 0.5,   // seek every ~half frame at 60fps
+    SEEK_THROTTLE_MS: 0,               // no throttle on desktop
     INTRO_ENABLED: true,
+    USE_FAST_SEEK: false,
 };
 const MOBILE = {
-    LERP: 0.55,                         // bigger jumps → fewer seeks
-    MIN_SEEK_DELTA: 1 / 20,            // throttle to ~20 seeks/s max
+    LERP: 0.7,                          // much bigger jumps → far fewer seeks for smoothness
+    MIN_SEEK_DELTA: 1 / 15,            // only seek when delta is meaningful
+    SEEK_THROTTLE_MS: 80,              // throttle to ~12 seeks/s — sweet spot for mobile decoders
     INTRO_ENABLED: false,               // skip reverse-seek intro on mobile
+    USE_FAST_SEEK: true,                // use fastSeek() for instant nearest-keyframe jump
 };
 
 interface ScrollVideoProps {
@@ -132,12 +136,38 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
 
         let isActive = true;
         let lastSeekTime = -1;
-        let lastSeekTimestamp = 0; // throttle by wall-clock time on mobile
+        let lastSeekTimestamp = 0;
         const FRAME_DURATION = 1 / 60;
+
+        // Helper to seek: use fastSeek on mobile for instant keyframe jump
+        const seekVideo = (time: number) => {
+            if (cfg.USE_FAST_SEEK && typeof video.fastSeek === "function") {
+                video.fastSeek(time);
+            } else {
+                video.currentTime = time;
+            }
+        };
+
+        // ─── Track scroll progress via passive scroll listener (cheaper than polling getBoundingClientRect) ───
+        let scrollProgress = 0;
+        let scrollDirty = true; // flag to avoid redundant rect reads
+
+        const updateProgress = () => {
+            const rect = container.getBoundingClientRect();
+            const vh = mobile ? cachedViewportH : window.innerHeight;
+            const scrollRange = rect.height - vh;
+            if (scrollRange > 0) {
+                scrollProgress = Math.max(0, Math.min(1, -rect.top / scrollRange));
+            }
+            scrollDirty = false;
+        };
+
+        const onScroll = () => { scrollDirty = true; };
+        window.addEventListener("scroll", onScroll, { passive: true });
 
         // Intro state (local to this effect run)
         let introStartStamp: number | null = null;
-        let introComplete = !cfg.INTRO_ENABLED; // skip intro on mobile
+        let introComplete = !cfg.INTRO_ENABLED;
         let waitingForData = cfg.INTRO_ENABLED;
 
         // If intro skipped, start at time 0
@@ -150,10 +180,20 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
         let cachedViewportW = window.innerWidth;
         let cachedViewportH = window.innerHeight;
 
+        // Frame counter for skipping on mobile
+        let frameCount = 0;
+
         const tick = (timestamp: number) => {
             if (!isActive) return;
+            frameCount++;
 
-            // Only update viewport cache on orientation change (width change), ignoring toolbar collapse.
+            // On mobile: only process every other rAF frame to halve CPU/GPU pressure
+            if (mobile && frameCount % 2 !== 0 && introComplete) {
+                rafRef.current = requestAnimationFrame(tick);
+                return;
+            }
+
+            // Only update viewport cache on orientation change (width change)
             if (window.innerWidth !== cachedViewportW) {
                 cachedViewportW = window.innerWidth;
                 cachedViewportH = window.innerHeight;
@@ -161,30 +201,21 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
 
             // ─── PHASE 1: Intro reverse animation (desktop only) ───
             if (!introComplete) {
-                // Wait until video actually has frame data before starting intro timer
                 if (waitingForData) {
-                    // Start intro immediately if ready, or force start after 1.5s fallback
                     if (video.readyState >= 2 || (timestamp - (introStartStamp || timestamp) > 1500)) {
                         waitingForData = false;
-                        // Reset introStartStamp so the timeline starts fresh from this moment
                         introStartStamp = timestamp;
                         video.currentTime = INTRO_START_TIME;
                         currentTimeRef.current = INTRO_START_TIME;
                     } else {
-                        // Track when we started waiting
-                        if (introStartStamp === null) {
-                            introStartStamp = timestamp;
-                        }
+                        if (introStartStamp === null) introStartStamp = timestamp;
                         rafRef.current = requestAnimationFrame(tick);
                         return;
                     }
                 }
 
-                // Normal intro timing elapsed check
                 const elapsed = (timestamp - (introStartStamp as number)) / 1000;
                 const t = Math.min(1, elapsed / INTRO_DURATION);
-
-                // Cubic ease-out for smooth deceleration
                 const eased = 1 - Math.pow(1 - t, 3);
                 const introTime = INTRO_START_TIME * (1 - eased);
 
@@ -202,42 +233,42 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
             }
 
             // ─── PHASE 2: Scroll-controlled video ───
-            const rect = container.getBoundingClientRect();
-            const scrollRange = rect.height - cachedViewportH;
+            // Only recalculate rect when scroll actually happened
+            if (scrollDirty) updateProgress();
 
-            if (scrollRange > 0 && rect.bottom > 0 && rect.top < cachedViewportH) {
-                const progress = Math.max(0, Math.min(1, -rect.top / scrollRange));
-                const targetTime = progress * (video.duration || 0);
+            const targetTime = scrollProgress * (video.duration || 0);
+            const diff = targetTime - currentTimeRef.current;
+            const absDiff = Math.abs(diff);
 
-                const diff = targetTime - currentTimeRef.current;
-                const absDiff = Math.abs(diff);
+            if (absDiff < FRAME_DURATION) {
+                currentTimeRef.current = targetTime;
+            } else {
+                currentTimeRef.current += diff * cfg.LERP;
+            }
 
-                if (absDiff < FRAME_DURATION) {
-                    currentTimeRef.current = targetTime;
-                } else {
-                    currentTimeRef.current += diff * cfg.LERP;
-                }
+            const seekDelta = Math.abs(currentTimeRef.current - lastSeekTime);
+            const timeSinceLast = timestamp - lastSeekTimestamp;
+            const throttleOk = cfg.SEEK_THROTTLE_MS > 0
+                ? timeSinceLast >= cfg.SEEK_THROTTLE_MS
+                : true;
 
-                const seekDelta = Math.abs(currentTimeRef.current - lastSeekTime);
-                // On mobile, also throttle by wall-clock time (50ms = ~20fps)
-                const timeSinceLast = timestamp - lastSeekTimestamp;
-                const timeOk = mobile ? timeSinceLast >= 50 : true;
-
-                if (seekDelta >= cfg.MIN_SEEK_DELTA && video.readyState >= 2 && timeOk) {
-                    video.currentTime = currentTimeRef.current;
-                    lastSeekTime = currentTimeRef.current;
-                    lastSeekTimestamp = timestamp;
-                }
+            if (seekDelta >= cfg.MIN_SEEK_DELTA && video.readyState >= 2 && throttleOk) {
+                seekVideo(currentTimeRef.current);
+                lastSeekTime = currentTimeRef.current;
+                lastSeekTimestamp = timestamp;
             }
 
             rafRef.current = requestAnimationFrame(tick);
         };
 
+        // Do an initial progress read
+        updateProgress();
         rafRef.current = requestAnimationFrame(tick);
 
         return () => {
             isActive = false;
             cancelAnimationFrame(rafRef.current);
+            window.removeEventListener("scroll", onScroll);
         };
     }, [isReady]);
 
@@ -258,16 +289,16 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
                     className="absolute inset-0 w-full h-full object-cover z-0"
                     style={{
                         pointerEvents: "none",
-                        willChange: "transform",           // GPU compositing hint
-                        transform: "translateZ(0)",         // force GPU layer
+                        willChange: "transform",
+                        transform: "translateZ(0)",
                     }}
                     initial={isMobile
-                        ? { opacity: 0 }                    // simpler animation on mobile (no blur)
+                        ? { opacity: 0 }
                         : { scale: 1.15, filter: "blur(10px)", opacity: 0 }
                     }
                     animate={isReady
                         ? isMobile
-                            ? { opacity: 1, scale: 1, filter: "none" }  // clear SSR desktop initial
+                            ? { opacity: 1, scale: 1, filter: "none" }
                             : { scale: 1, filter: "blur(0px)", opacity: 1 }
                         : {}
                     }
