@@ -26,31 +26,37 @@ export default function Contact() {
 
     return (
         <section id="contact" className="relative w-full bg-[#0a0a0a] z-20 overflow-hidden">
+            {/* Ambient glow */}
+            <div className="absolute inset-0 z-0 opacity-20">
+                <div className="absolute top-1/3 right-1/4 w-[250px] sm:w-[500px] h-[250px] sm:h-[500px] rounded-full bg-[#8a5cff]/20 blur-[80px] sm:blur-[120px]" />
+                <div className="absolute bottom-1/3 left-1/4 w-[200px] sm:w-[400px] h-[200px] sm:h-[400px] rounded-full bg-[#ff5c7a]/15 blur-[80px] sm:blur-[120px]" />
+            </div>
             {/* Top separator */}
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-16">
+            <div className="relative z-10 max-w-6xl mx-auto px-5 sm:px-6 md:px-16">
                 <div className="h-px bg-white/[0.06]" />
             </div>
 
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-16 pt-20 sm:pt-32 pb-20 sm:pb-32">
+            <div className="relative z-10 max-w-6xl mx-auto px-5 sm:px-6 md:px-16 pt-16 sm:pt-20 md:pt-32 pb-16 sm:pb-20 md:pb-32">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
 
                     {/* Left — Info */}
                     <motion.div
-                        initial={{ opacity: 0, x: -40 }}
+                        initial={{ opacity: 0, x: -24 }}
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true, margin: "-80px" }}
-                        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                        style={{ willChange: "transform, opacity" }}
                     >
                         <p className="text-xs uppercase tracking-[0.3em] text-white/30 mb-3">Get in Touch</p>
-                        <h2 className="text-2xl md:text-3xl font-semibold text-white tracking-tight mb-4">
+                        <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-white tracking-tight mb-3 sm:mb-4">
                             Let&apos;s Build Something
                         </h2>
-                        <p className="text-white/35 text-sm sm:text-base leading-relaxed mb-10 max-w-md">
+                        <p className="text-white/35 text-sm sm:text-base leading-relaxed mb-6 sm:mb-10 max-w-md">
                             Have a project idea, freelance opportunity, or just want to say hi? I&apos;d love to hear from you. Let&apos;s connect and create something extraordinary.
                         </p>
 
                         {/* Contact Cards */}
-                        <div className="space-y-4">
+                        <div className="space-y-3 sm:space-y-4">
                             {/* Email */}
                             <a
                                 href="mailto:devjibran0@gmail.com"
@@ -104,10 +110,11 @@ export default function Contact() {
 
                     {/* Right — Contact Form */}
                     <motion.div
-                        initial={{ opacity: 0, x: 40 }}
+                        initial={{ opacity: 0, x: 24 }}
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true, margin: "-80px" }}
-                        transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+                        transition={{ duration: 0.6, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
+                        style={{ willChange: "transform, opacity" }}
                     >
                         <form onSubmit={handleSubmit} className="space-y-5">
                             <div>

@@ -9,6 +9,8 @@ import Contact from "@/components/Contact";
 import Navbar from "@/components/Navbar";
 import PageReveal from "@/components/PageReveal";
 import SectionReveal from "@/components/SectionReveal";
+import About from "@/components/About";
+import SkillsMarquee from "@/components/SkillsMarquee";
 
 export default function Home() {
   const [videoReady, setVideoReady] = useState(false);
@@ -60,6 +62,12 @@ export default function Home() {
           </div>
         </div>
       </motion.div>
+
+      {/* About & Experience section */}
+      <About />
+
+      {/* Infinite scrolling skills marquee */}
+      <SkillsMarquee />
 
       {/* Projects — already has internal whileInView animations */}
       <Projects />

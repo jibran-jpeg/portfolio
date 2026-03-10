@@ -19,9 +19,9 @@ export default function SectionReveal({
     const prefersReduced = useReducedMotion();
 
     const directionMap = {
-        up: { y: 45, x: 0 },
-        left: { y: 0, x: -45 },
-        right: { y: 0, x: 45 },
+        up: { y: 30, x: 0 },
+        left: { y: 0, x: -30 },
+        right: { y: 0, x: 30 },
     };
 
     const offset = directionMap[direction];
@@ -31,15 +31,16 @@ export default function SectionReveal({
             initial={
                 prefersReduced
                     ? { opacity: 0 }
-                    : { opacity: 0, filter: "blur(6px)", ...offset }
+                    : { opacity: 0, ...offset }
             }
-            whileInView={{ opacity: 1, x: 0, y: 0, filter: "blur(0px)" }}
-            viewport={{ once: true, margin: "-60px" }}
+            whileInView={{ opacity: 1, x: 0, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
             transition={{
-                duration: 1.2,
+                duration: 0.7,
                 delay,
-                ease: [0.25, 0.1, 0.25, 1],
+                ease: [0.22, 1, 0.36, 1],
             }}
+            style={{ willChange: "transform, opacity" }}
             className={className}
         >
             {children}

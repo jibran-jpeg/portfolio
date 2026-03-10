@@ -15,8 +15,25 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Jibran Sarwar | Full-Stack Developer & AI Architect",
-  description: "Portfolio of Jibran Sarwar - Building high-vibe digital products and AI Automations.",
+  title: "Jibran Sarwar | Full-Stack Developer & AI Solutions",
+  description: "Portfolio of Jibran Sarwar, an AI Architect & Full-Stack Web Developer building autonomous agents, intelligent chatbots, and premium digital web experiences.",
+  keywords: ["Jibran Sarwar", "Full-Stack Developer", "AI Architect", "Web Developer", "React", "Next.js", "AI Automation", "Fiverr Freelancer", "n8n", "Ollama"],
+  authors: [{ name: "Jibran Sarwar", url: "https://jibran-jpeg.github.io/portfolio/" }],
+  creator: "Jibran Sarwar",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://jibran-jpeg.github.io/portfolio/",
+    title: "Jibran Sarwar | Full-Stack Developer & AI Solutions",
+    description: "Portfolio of Jibran Sarwar, an AI Architect & Full-Stack Web Developer.",
+    siteName: "Jibran Sarwar Portfolio",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Jibran Sarwar | Full-Stack Developer & AI Solutions",
+    description: "Portfolio of Jibran Sarwar, an AI Architect & Full-Stack Web Developer.",
+  },
+  metadataBase: new URL("https://jibran-jpeg.github.io/portfolio/"),
 };
 
 export const viewport = {
@@ -27,6 +44,7 @@ export const viewport = {
 };
 
 import SmoothScrolling from "@/components/SmoothScrolling";
+import Cursor from "@/components/Cursor";
 
 export default function RootLayout({
   children,
@@ -36,6 +54,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={`${sora.variable} ${dmSans.variable}`}>
       <body className="font-sans antialiased text-white bg-[#121212]">
+        <Cursor />
         <SmoothScrolling>
           {children}
         </SmoothScrolling>

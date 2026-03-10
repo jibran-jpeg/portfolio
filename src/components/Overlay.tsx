@@ -22,26 +22,6 @@ const elegantFadeUp = {
     },
 };
 
-// Section 2 & 3 scroll-triggered variants (matching the elegant vibe)
-const sectionSlideUp = {
-    hidden: { opacity: 0, y: 40, filter: "blur(8px)" },
-    visible: {
-        opacity: 1,
-        y: 0,
-        filter: "blur(0px)",
-        transition: { duration: 1.2, ease: [0.25, 0.1, 0.25, 1] as const },
-    },
-};
-
-const sectionSubtext = {
-    hidden: { opacity: 0, y: 20, filter: "blur(4px)" },
-    visible: {
-        opacity: 1,
-        y: 0,
-        filter: "blur(0px)",
-        transition: { duration: 1.2, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] as const },
-    },
-};
 
 export default function Overlay({ progress, revealed = true }: { progress?: MotionValue<number>; revealed?: boolean }) {
     const { scrollYProgress: defaultScroll } = useScroll();
@@ -63,7 +43,7 @@ export default function Overlay({ progress, revealed = true }: { progress?: Moti
     const y3 = useTransform(scrollYProgress, [0.55, 0.92], [40, -40]);
 
     return (
-        <div className="absolute inset-0 pointer-events-none z-10 flex flex-col justify-center px-4 sm:px-6 md:px-24">
+        <div className="absolute inset-0 pointer-events-none z-10 flex flex-col justify-center px-6 md:px-24">
             {/* Section 1 — Name & Taglines with staggered rise-up */}
             <motion.div
                 style={{ opacity: opacity1, y: y1, visibility: vis1 }}
@@ -83,13 +63,13 @@ export default function Overlay({ progress, revealed = true }: { progress?: Moti
                     </motion.h1>
 
                     <motion.div
-                        variants={heroContainer} // Use the parent config for stagger
+                        variants={heroContainer}
                         className="flex flex-wrap justify-center gap-1.5 sm:gap-2"
                     >
                         {TAGLINES.map((tag) => (
                             <motion.span
                                 key={tag}
-                                variants={elegantFadeUp} // Then animate each pill individually
+                                variants={elegantFadeUp}
                                 className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-md text-[9px] sm:text-[10px] md:text-xs font-body tracking-[0.12em] sm:tracking-[0.15em] text-[#a0a0a0] uppercase"
                             >
                                 {tag}
@@ -99,55 +79,31 @@ export default function Overlay({ progress, revealed = true }: { progress?: Moti
                 </motion.div>
             </motion.div>
 
-            {/* Section 2 — slides up from bottom on scroll */}
+            {/* Section 2 */}
             <motion.div
                 style={{ opacity: opacity2, y: y2, visibility: vis2 }}
-                className="absolute inset-0 flex flex-col items-center justify-center px-5 sm:px-8 md:px-32 text-center sm:text-right sm:items-end"
+                className="absolute inset-0 flex flex-col items-center sm:items-end justify-center px-6 sm:px-8 md:px-32 text-center sm:text-right"
             >
-                <motion.h2
-                    variants={sectionSlideUp}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true }}
-                    className="text-xl sm:text-3xl md:text-4xl lg:text-[3rem] font-semibold tracking-tight text-white max-w-2xl leading-[1.2] sm:leading-[1.15] drop-shadow-xl"
-                >
+                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[3rem] font-semibold tracking-tight text-white max-w-2xl leading-[1.15] drop-shadow-xl">
                     Building high-vibe digital products.
-                </motion.h2>
-                <motion.p
-                    variants={sectionSubtext}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true }}
-                    className="mt-3 sm:mt-6 text-xs sm:text-base md:text-lg text-white/40 max-w-lg font-body font-light leading-relaxed"
-                >
+                </h2>
+                <p className="mt-4 sm:mt-6 text-sm sm:text-base md:text-lg text-white/40 max-w-lg font-body font-light leading-relaxed">
                     Integrating GPT, Gemini &amp; Claude APIs into production apps. Building with React, Three.js, Node.js, Python &amp; C++, deployed on AWS.
-                </motion.p>
+                </p>
             </motion.div>
 
-            {/* Section 3 — slides up from bottom on scroll */}
+            {/* Section 3 */}
             <motion.div
                 style={{ opacity: opacity3, y: y3, visibility: vis3 }}
-                className="absolute inset-0 flex flex-col items-center justify-center px-5 sm:px-8 md:px-32 text-center sm:text-left sm:items-start"
+                className="absolute inset-0 flex flex-col items-center sm:items-start justify-center px-6 sm:px-8 md:px-32 text-center sm:text-left"
             >
-                <motion.h2
-                    variants={sectionSlideUp}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true }}
-                    className="text-xl sm:text-3xl md:text-4xl lg:text-[3rem] font-semibold tracking-tight text-white max-w-2xl leading-[1.2] sm:leading-[1.15] drop-shadow-xl"
-                >
+                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[3rem] font-semibold tracking-tight text-white max-w-2xl leading-[1.15] drop-shadow-xl">
                     Crafting the Future of <br className="hidden lg:block" />
                     <span className="text-white/50 italic font-light">Autonomous AI.</span>
-                </motion.h2>
-                <motion.p
-                    variants={sectionSubtext}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true }}
-                    className="mt-3 sm:mt-6 text-xs sm:text-base md:text-lg text-white/40 max-w-lg font-body font-light leading-relaxed"
-                >
-                    Currently co-founding an AI-driven automation Software House and innovating at SZABIST &amp; ESQUAL.
-                </motion.p>
+                </h2>
+                <p className="mt-4 sm:mt-6 text-sm sm:text-base md:text-lg text-white/40 max-w-lg font-body font-light leading-relaxed">
+                    Currently working as an AI &amp; Full-Stack Freelancer and pursuing Computer Science at SZABIST.
+                </p>
             </motion.div>
         </div>
     );
