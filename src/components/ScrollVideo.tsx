@@ -105,8 +105,10 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
             video.currentTime = target;
 
             video.play().catch(() => {
-                // If play() is blocked, we still fallback to scrubbing paused
-                video.pause();
+                // If play() is blocked due to browser policies, we simply leave the video as-is.
+                // explicitly calling video.pause() here triggers Android Chrome and iOS Safari
+                // to display a native large play button overlay because it enters a user-paused state.
+                // The video will still scrub normally since we manually set currentTime.
             });
         };
 
@@ -260,6 +262,7 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
                     ref={videoRef}
                     src={`${basePath}/hero.mp4`}
                     autoPlay
+                    loop
                     controls={false}
                     disablePictureInPicture
                     disableRemotePlayback
