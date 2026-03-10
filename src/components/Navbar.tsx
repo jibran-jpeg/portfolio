@@ -93,7 +93,7 @@ export default function Navbar() {
 
                     {/* Right side — minimal */}
                     <div className="flex items-center gap-3">
-                        <a href="/resume.pdf" download="Jibran-Sarwar-Resume.pdf" className="hidden md:flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-white/10 bg-white/5 text-white/50 text-xs font-medium hover:bg-white/10 hover:text-white transition-all duration-300">
+                        <a target="_blank" rel="noopener noreferrer" href={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/resume.pdf`} download="Jibran-Sarwar-Resume.pdf" className="hidden md:flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-white/10 bg-white/5 text-white/50 text-xs font-medium hover:bg-white/10 hover:text-white transition-all duration-300">
                             <Download size={14} />
                             <span>Resume</span>
                         </a>
@@ -152,7 +152,9 @@ export default function Navbar() {
                             className="mt-12 flex flex-col items-center gap-4"
                         >
                             <a
-                                href="/resume.pdf"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                href={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/resume.pdf`}
                                 download="Jibran-Sarwar-Resume.pdf"
                                 onClick={() => setMobileOpen(false)}
                                 className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/10 bg-white/5 text-white/60 text-sm font-medium hover:bg-white/10 transition-all"
