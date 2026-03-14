@@ -35,12 +35,11 @@ const EDUCATION = [
 
 // Reusable animation variants
 const fadeInUp = {
-    hidden: { opacity: 0, y: 24, filter: "blur(6px)" },
+    hidden: { opacity: 0, y: 24 },
     visible: {
         opacity: 1,
         y: 0,
-        filter: "blur(0px)",
-        transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] as const },
+        transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
     },
 };
 
@@ -65,7 +64,7 @@ export default function About() {
                 <motion.div
                     initial="hidden"
                     whileInView="visible"
-                    viewport={{ once: true, margin: "-80px" }}
+                    viewport={{ once: true, amount: 0.15 }}
                     variants={fadeInUp}
                     className="mb-10 sm:mb-16 md:mb-24 max-w-2xl"
                 >

@@ -21,9 +21,9 @@ export default function SkillsMarquee() {
         <section className="w-full py-12 sm:py-20 bg-[#0a0a0a] overflow-hidden border-y border-white/[0.04] relative">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 mb-8 md:mb-12">
                 <motion.h3
-                    initial={{ opacity: 0, y: 20, filter: "blur(6px)" }}
-                    whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                    viewport={{ once: true }}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.15 }}
                     transition={{ duration: 0.6 }}
                     className="text-white/40 text-xs sm:text-sm uppercase tracking-[0.2em] font-medium"
                 >
