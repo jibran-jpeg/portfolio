@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, useScroll } from "framer-motion";
-import ScrollVideo from "@/components/ScrollVideo";
+
 import Overlay from "@/components/Overlay";
 import Projects from "@/components/Projects";
 import Contact from "@/components/Contact";
@@ -28,15 +28,13 @@ export default function Home() {
       history.scrollRestoration = "manual";
     }
     window.scrollTo(0, 0);
-  }, []);
-
-  const handleVideoReady = useCallback(() => {
+    // No video — reveal immediately
     setVideoReady(true);
   }, []);
 
-  const handleRevealComplete = useCallback(() => {
+  const handleRevealComplete = () => {
     setRevealed(true);
-  }, []);
+  };
 
   return (
     <main className="min-h-screen bg-[#121212] selection:bg-white/30 selection:text-white">
@@ -46,16 +44,14 @@ export default function Home() {
       {/* Navbar appears immediately after reveal, no animation */}
       {revealed && <Navbar />}
 
-      {/* Hero section — 800vh scrolly container */}
+      {/* Hero section — full-screen dark background (video coming soon) */}
       <motion.div
         ref={heroRef}
-        className="relative w-full"
+        className="relative w-full h-[800vh] bg-[#0a0a0a]"
         initial={{ opacity: 0 }}
         animate={revealed ? { opacity: 1 } : {}}
         transition={{ duration: 0.4, ease: "easeOut" }}
       >
-        <ScrollVideo onReady={handleVideoReady} />
-
         <div className="absolute top-0 left-0 right-0 h-full pointer-events-none">
           <div className="sticky top-0 h-[100dvh] w-full overflow-hidden z-10 flex flex-col justify-center transition-[height] duration-500 ease-out">
             <Overlay progress={scrollYProgress} revealed={revealed} />
