@@ -27,7 +27,7 @@ const PROJECTS = [
     title: "The Skardu Basket",
     category: "Full-Stack Web",
     description:
-      "Developed a premium e-commerce interface focusing on modern aesthetic 'Vibe Code', Glassmorphism, and Neumorphism.",
+      "Vibe coded a premium e-commerce interface focusing on modern aesthetics, Glassmorphism, and Neumorphism.",
     link: "https://jibran-jpeg.github.io/the-skardu-basket/",
     tags: ["React", "Tailwind CSS", "UI/UX"],
   },
@@ -36,7 +36,7 @@ const PROJECTS = [
     title: "Intelligent Chatbots via Ollama",
     category: "Agentic AI",
     description:
-      "Developing complex n8n workflows connecting AI agents with databases, CRMs, and social media platforms for Fiverr clients.",
+      "Building complex n8n workflows connecting autonomous AI agents with databases, CRMs, and APIs for global clients.",
     link: "https://github.com/jibran-jpeg",
     tags: ["Ollama", "Local LLMs", "Automation"],
   },
@@ -106,8 +106,8 @@ export default function Projects() {
               Selected Work
             </h2>
             <p className="text-white/35 text-sm sm:text-base max-w-lg leading-relaxed">
-              Recent projects focusing on AI integration, automated workflows,
-              and modern web aesthetics.
+              Recent projects focusing on AI integration, autonomous agents,
+              and vibe-coded modern web applications.
             </p>
           </motion.div>
 

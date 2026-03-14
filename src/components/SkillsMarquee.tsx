@@ -4,12 +4,12 @@ import { motion } from "framer-motion";
 
 const skillsRow1 = [
     "React", "Next.js", "TypeScript", "Node.js", "Tailwind CSS",
-    "Three.js", "Framer Motion", "OpenAI API", "Gemini API",
+    "Three.js", "Framer Motion", "Cursor AI", "OpenAI API", "Gemini API",
 ];
 
 const skillsRow2 = [
     "Claude API", "n8n Workflows", "Agentic AI", "Ollama",
-    "Python", "PostgreSQL", "Supabase", "AWS", "C++",
+    "Python", "PostgreSQL", "Supabase", "AWS", "Vibe Coding", "C++",
 ];
 
 // Triple for seamless infinite loop

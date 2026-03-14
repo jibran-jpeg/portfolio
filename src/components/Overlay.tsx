@@ -2,7 +2,7 @@
 
 import { motion, useScroll, useTransform, MotionValue } from "framer-motion";
 
-const TAGLINES = ["Full-Stack Developer", "AI Architect", "UI/UX Specialist"];
+const TAGLINES = ["Full-Stack AI Developer", "Vibe Coder", "AI Automation Expert"];
 
 // Unified, slower, more elegant rise-up variants
 const heroContainer = {
@@ -85,10 +85,10 @@ export default function Overlay({ progress, revealed = true }: { progress?: Moti
                 className="absolute inset-0 flex flex-col items-center sm:items-end justify-center px-6 sm:px-8 md:px-32 text-center sm:text-right"
             >
                 <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[3rem] font-semibold tracking-tight text-white max-w-2xl leading-[1.15] drop-shadow-xl">
-                    Building high-vibe digital products.
+                    Building high-vibe AI-powered products.
                 </h2>
                 <p className="mt-4 sm:mt-6 text-sm sm:text-base md:text-lg text-white/40 max-w-lg font-body font-light leading-relaxed">
-                    Integrating GPT, Gemini &amp; Claude APIs into production apps. Building with React, Three.js, Node.js, Python &amp; C++, deployed on AWS.
+                    Vibe coding full-stack applications end-to-end. Integrating GPT, Gemini &amp; Claude APIs into production. React, Node.js, Python &amp; Next.js — deployed on AWS.
                 </p>
             </motion.div>
 
@@ -98,11 +98,11 @@ export default function Overlay({ progress, revealed = true }: { progress?: Moti
                 className="absolute inset-0 flex flex-col items-center sm:items-start justify-center px-6 sm:px-8 md:px-32 text-center sm:text-left"
             >
                 <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[3rem] font-semibold tracking-tight text-white max-w-2xl leading-[1.15] drop-shadow-xl">
-                    Crafting the Future of <br className="hidden lg:block" />
-                    <span className="text-white/50 italic font-light">Autonomous AI.</span>
+                    Shipping ideas fast with <br className="hidden lg:block" />
+                    <span className="text-white/50 italic font-light">Vibe Coding &amp; AI.</span>
                 </h2>
                 <p className="mt-4 sm:mt-6 text-sm sm:text-base md:text-lg text-white/40 max-w-lg font-body font-light leading-relaxed">
-                    Currently working as an AI &amp; Full-Stack Freelancer and pursuing Computer Science at SZABIST.
+                    Full Stack AI Developer — building autonomous agents, AI-powered apps &amp; premium web experiences using cursor-driven vibe coding workflows.
                 </p>
             </motion.div>
         </div>

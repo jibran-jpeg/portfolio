@@ -8,7 +8,7 @@ const EXPERIENCES = [
         role: "AI & Full-Stack Freelancer",
         company: "Fiverr / Global Clients",
         period: "2026 – Present",
-        description: "Developing autonomous AI agents, intelligent chatbots, and modern web applications. Specialized in AI automation via n8n workflows and local LLM integrations (Ollama).",
+        description: "Building AI agents, intelligent chatbots, and full-stack web apps using vibe coding workflows. Specialized in AI automation via n8n workflows, local LLM integrations (Ollama), and shipping fast with Cursor AI.",
         icon: Sparkles,
         accent: "from-violet-500/20 to-fuchsia-500/20",
     },
@@ -16,7 +16,7 @@ const EXPERIENCES = [
         role: "Web Development Intern",
         company: "ESQUAL",
         period: "2025",
-        description: "Contributed to full-stack web projects building responsive React frontends and Node.js backends. Gained hands-on experience with AWS and CI/CD pipelines.",
+        description: "Contributed to full-stack web projects building responsive React frontends and Node.js backends. Applied vibe-coding principles to ship features fast, with hands-on experience on AWS and CI/CD pipelines.",
         icon: Briefcase,
         accent: "from-sky-500/20 to-cyan-500/20",
     }
@@ -76,10 +76,10 @@ export default function About() {
                         </span>
                     </div>
                     <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-white mb-4 sm:mb-6">
-                        Engineering <span className="text-white/40 italic">intelligent</span> digital experiences.
+                        Engineering <span className="text-white/40 italic">AI-powered</span> digital products.
                     </h2>
                     <p className="text-white/50 text-sm sm:text-base md:text-lg leading-relaxed font-light">
-                        I am a Full-Stack Developer and AI Architect passionate about bridging the gap between cutting-edge artificial intelligence and beautiful, high-performance web applications. I specialize in building autonomous agents and premium digital products.
+                        I&apos;m a Full-Stack AI Developer who vibe codes — combining the speed of AI-assisted development with deep technical know-how to ship premium web apps and autonomous AI agents. I move fast, build clean, and deliver impact.
                     </p>
                 </motion.div>
 
