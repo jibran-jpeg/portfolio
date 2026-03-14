@@ -37,6 +37,7 @@ interface ScrollVideoProps {
 export default function ScrollVideo({ onReady }: ScrollVideoProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
+    const [videoUrl, setVideoUrl] = useState<string>("");
     const [isReady, setIsReady] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const rafRef = useRef<number>(0);
@@ -45,6 +46,37 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
 
     useEffect(() => {
         setIsMobile(isMobileDevice());
+    }, []);
+
+    // ─── CRITICAL VERCEL FIX: Fetch video as Blob ───
+    // Vercel's edge network often struggles with rapid range requests (seeking)
+    // on large MP4 files, causing black screens during scroll.
+    // By fetching it as a blob first, the browser holds it in memory,
+    // allowing instant, latency-free frame scrubbing.
+    useEffect(() => {
+        let objectUrl = "";
+        const fetchVideo = async () => {
+            try {
+                // Fetch the video file
+                const response = await fetch(`${basePath}/hero.mp4`);
+                if (!response.ok) throw new Error("Network response was not ok");
+                const blob = await response.blob();
+                
+                // Create a local object URL for the browser
+                objectUrl = URL.createObjectURL(blob);
+                setVideoUrl(objectUrl);
+            } catch (error) {
+                console.error("Failed to load video as blob. Fallback to direct URL.", error);
+                // Fallback to direct URL if fetch fails
+                setVideoUrl(`${basePath}/hero.mp4`);
+            }
+        };
+
+        fetchVideo();
+
+        return () => {
+            if (objectUrl) URL.revokeObjectURL(objectUrl);
+        };
     }, []);
 
     // Add webkit-playsinline for older iOS Safari
@@ -56,11 +88,11 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
     }, []);
 
     const handleCanPlay = useCallback(() => {
-        if (!isReady) {
+        if (!isReady && videoUrl) {
             setIsReady(true);
             onReady?.();
         }
-    }, [isReady, onReady]);
+    }, [isReady, onReady, videoUrl]);
 
     // Fallback timer so loading screen doesn't hang forever
     useEffect(() => {
@@ -78,15 +110,18 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
         video.addEventListener("loadedmetadata", handleCanPlay, { once: true });
         video.addEventListener("loadeddata", handleCanPlay, { once: true });
 
-        // Fallback timer (3s mobile, 5s desktop)
-        const fallbackTimer = setTimeout(() => handleCanPlay(), isMobileDevice() ? 3000 : 5000);
+        // Fallback timer (3s mobile, 5s desktop) - only start if we have a URL
+        let fallbackTimer: NodeJS.Timeout;
+        if (videoUrl) {
+            fallbackTimer = setTimeout(() => handleCanPlay(), isMobileDevice() ? 3000 : 5000);
+        }
         
         return () => {
-            clearTimeout(fallbackTimer);
+            if (fallbackTimer) clearTimeout(fallbackTimer);
             video.removeEventListener("loadedmetadata", handleCanPlay);
             video.removeEventListener("loadeddata", handleCanPlay);
         };
-    }, [handleCanPlay]);
+    }, [handleCanPlay, videoUrl]);
 
     // Prime video + mobile unlock
     useEffect(() => {
@@ -274,48 +309,51 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
     return (
         <div ref={containerRef} className="relative h-[800vh] w-full bg-[#0a0a0a]">
             <div className="sticky top-0 h-[100dvh] w-full overflow-hidden transition-[height] duration-500 ease-out">
-                <motion.video
-                    ref={videoRef}
-                    src={`${basePath}/hero.mp4`}
-                    controls={false}
-                    disablePictureInPicture
-                    disableRemotePlayback
-                    muted
-                    playsInline
-                    tabIndex={-1}
-                    preload="auto"
-                    onCanPlayThrough={handleCanPlay}
-                    onCanPlay={handleCanPlay}
-                    onLoadedData={handleCanPlay}
-                    onError={handleCanPlay}
-                    className="absolute inset-0 w-full h-full object-cover z-0 hero-video"
-                    style={{
-                        pointerEvents: "none",
-                        willChange: "transform",
-                        transform: "translateZ(0)",
-                        // Force GPU layer on mobile
-                        backfaceVisibility: "hidden",
-                        WebkitBackfaceVisibility: "hidden",
-                    }}
-                    initial={isMobile
-                        ? { opacity: 0 }
-                        : { scale: 1.15, filter: "blur(10px)", opacity: 0 }
-                    }
-                    animate={isReady
-                        ? isMobile
-                            ? { opacity: 1, scale: 1, filter: "none" }
-                            : { scale: 1, filter: "blur(0px)", opacity: 1 }
-                        : {}
-                    }
-                    transition={isMobile
-                        ? { opacity: { duration: 0.8, ease: "easeOut" } }
-                        : {
-                            scale: { duration: 2.0, ease: [0.25, 0.1, 0.25, 1] },
-                            filter: { duration: 2.0, ease: [0.25, 0.1, 0.25, 1] },
-                            opacity: { duration: 0.6, ease: "easeOut" },
+                {videoUrl && (
+                    <motion.video
+                        ref={videoRef}
+                        src={videoUrl}
+                        controls={false}
+                        disablePictureInPicture
+                        disableRemotePlayback
+                        muted
+                        playsInline
+                        tabIndex={-1}
+                        preload="auto"
+                        onCanPlayThrough={handleCanPlay}
+                        onCanPlay={handleCanPlay}
+                        onLoadedData={handleCanPlay}
+                        onLoadedMetadata={handleCanPlay}
+                        onError={handleCanPlay}
+                        className="absolute inset-0 w-full h-full object-cover z-0 hero-video"
+                        style={{
+                            pointerEvents: "none",
+                            willChange: "transform",
+                            transform: "translateZ(0)",
+                            // Force GPU layer on mobile
+                            backfaceVisibility: "hidden",
+                            WebkitBackfaceVisibility: "hidden",
+                        }}
+                        initial={isMobile
+                            ? { opacity: 0 }
+                            : { scale: 1.15, filter: "blur(10px)", opacity: 0 }
                         }
-                    }
-                />
+                        animate={isReady
+                            ? isMobile
+                                ? { opacity: 1, scale: 1, filter: "none" }
+                                : { scale: 1, filter: "blur(0px)", opacity: 1 }
+                            : {}
+                        }
+                        transition={isMobile
+                            ? { opacity: { duration: 0.8, ease: "easeOut" } }
+                            : {
+                                scale: { duration: 2.0, ease: [0.25, 0.1, 0.25, 1] },
+                                filter: { duration: 2.0, ease: [0.25, 0.1, 0.25, 1] },
+                                opacity: { duration: 0.6, ease: "easeOut" },
+                            }
+                        }
+                    />
+                )}
                 {/* Invisible overlay to prevent touch/tap events reaching the video */}
                 <div className="absolute inset-0 z-10 w-full h-full bg-transparent select-none pointer-events-none" />
             </div>
