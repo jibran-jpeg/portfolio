@@ -67,15 +67,25 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
         const video = videoRef.current;
         if (!video) return;
 
-        // If already has data, fire immediately
-        if (video.readyState >= 3) {
+        // If we have at least metadata (readyState >= 1), we can start allowing the page to reveal.
+        // We don't need readyState 3 (HAVE_FUTURE_DATA) immediately, as Vercel/CDNs might chunk the video.
+        if (video.readyState >= 1) {
             handleCanPlay();
             return;
         }
 
-        // Shorter fallback on mobile (3s) since mobile browsers are stricter
+        // Add event listeners for earlier lifecycle events
+        video.addEventListener("loadedmetadata", handleCanPlay, { once: true });
+        video.addEventListener("loadeddata", handleCanPlay, { once: true });
+
+        // Fallback timer (3s mobile, 5s desktop)
         const fallbackTimer = setTimeout(() => handleCanPlay(), isMobileDevice() ? 3000 : 5000);
-        return () => clearTimeout(fallbackTimer);
+        
+        return () => {
+            clearTimeout(fallbackTimer);
+            video.removeEventListener("loadedmetadata", handleCanPlay);
+            video.removeEventListener("loadeddata", handleCanPlay);
+        };
     }, [handleCanPlay]);
 
     // Prime video + mobile unlock
@@ -88,10 +98,10 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
             video.currentTime = isMobileDevice() ? 0 : INTRO_START_TIME;
         };
 
-        if (video.readyState >= 2) {
+        if (video.readyState >= 1) {
             prime();
         } else {
-            video.addEventListener("loadeddata", prime, { once: true });
+            video.addEventListener("loadedmetadata", prime, { once: true });
         }
 
         // ── Mobile unlock strategy ──
