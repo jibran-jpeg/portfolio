@@ -276,17 +276,15 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
                         pointerEvents: "none",
                         willChange: "transform",
                         transform: "translateZ(0)",
-                        /* Cinematic color grading: boost contrast, slightly desaturate for film look, warm brightness */
-                        filter: "contrast(1.1) saturate(1.15) brightness(1.05)",
                     }}
                     initial={isMobile
                         ? { opacity: 0 }
-                        : { scale: 1.15, filter: "blur(10px) contrast(1.1) saturate(1.15) brightness(1.05)", opacity: 0 }
+                        : { scale: 1.15, filter: "blur(10px)", opacity: 0 }
                     }
                     animate={isReady
                         ? isMobile
-                            ? { opacity: 1, scale: 1, filter: "contrast(1.1) saturate(1.15) brightness(1.05)" }
-                            : { scale: 1, filter: "blur(0px) contrast(1.1) saturate(1.15) brightness(1.05)", opacity: 1 }
+                            ? { opacity: 1, scale: 1, filter: "none" }
+                            : { scale: 1, filter: "blur(0px)", opacity: 1 }
                         : {}
                     }
                     transition={isMobile
@@ -298,33 +296,7 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
                         }
                     }
                 />
-
-                {/* Cinematic vignette — darkened edges for dramatic focus */}
-                <div
-                    className="absolute inset-0 z-[1] pointer-events-none"
-                    style={{
-                        background: "radial-gradient(ellipse 70% 60% at 50% 45%, transparent 40%, rgba(0,0,0,0.5) 100%)",
-                    }}
-                />
-
-                {/* Subtle warm-cool color grade overlay */}
-                <div
-                    className="absolute inset-0 z-[2] pointer-events-none mix-blend-soft-light opacity-25"
-                    style={{
-                        background: "linear-gradient(135deg, rgba(30,60,120,0.4) 0%, transparent 50%, rgba(180,100,50,0.3) 100%)",
-                    }}
-                />
-
-                {/* Film grain texture — very subtle noise */}
-                <div
-                    className="absolute inset-0 z-[3] pointer-events-none opacity-[0.035]"
-                    style={{
-                        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-                        backgroundSize: "128px 128px",
-                    }}
-                />
-
-                {/* Invisible overlay to prevent touch/tap events on video */}
+                {/* Invisible overlay to absolutely prevent touch/tap events from reaching the video and showing the play button */}
                 <div className="absolute inset-0 z-10 w-full h-full bg-transparent select-none pointer-events-none" />
             </div>
         </div>
