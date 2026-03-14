@@ -21,17 +21,15 @@ const isMobileDevice = () => {
 // ─── Performance tuning per device ───
 const DESKTOP = {
     LERP: 0.35,
-    MIN_SEEK_DELTA: (1 / 60) * 0.5,   // seek every ~half frame at 60fps
-    SEEK_THROTTLE_MS: 0,               // no throttle on desktop
+    MIN_SEEK_DELTA: (1 / 60) * 0.5,
+    SEEK_THROTTLE_MS: 0,
     INTRO_ENABLED: true,
-    USE_FAST_SEEK: false,
 };
 const MOBILE = {
-    LERP: 0.5,                          // balanced: smooth interpolation without too many seeks
-    MIN_SEEK_DELTA: 1 / 24,            // only seek when delta is meaningful (~24fps worth)
-    SEEK_THROTTLE_MS: 50,              // throttle to ~20 seeks/s
-    INTRO_ENABLED: false,               // skip reverse-seek intro on mobile
-    USE_FAST_SEEK: false,               // disabled: fastSeek jumps to distant keyframes causing choppiness
+    LERP: 0.5,
+    MIN_SEEK_DELTA: 1 / 24,
+    SEEK_THROTTLE_MS: 50,
+    INTRO_ENABLED: false,
 };
 
 interface ScrollVideoProps {
@@ -42,16 +40,14 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
     const [isReady, setIsReady] = useState(false);
-    const [isMobile, setIsMobile] = useState(false); // starts false to match SSR
+    const [isMobile, setIsMobile] = useState(false);
     const rafRef = useRef<number>(0);
     const currentTimeRef = useRef(0);
 
-    // Detect mobile after mount to avoid hydration mismatch
     useEffect(() => {
         setIsMobile(isMobileDevice());
     }, []);
 
-    // Signal "ready" to parent (loading screen) when we have enough data
     const handleCanPlay = useCallback(() => {
         if (!isReady) {
             setIsReady(true);
@@ -59,69 +55,47 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
         }
     }, [isReady, onReady]);
 
-    // Safety check for cached videos + fallback
+    // Fallback timer so loading screen doesn't hang forever
     useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
 
-        let readyTimer: NodeJS.Timeout | null = null;
-        // readyState 4 = HAVE_ENOUGH_DATA (can play through)
-        if (video.readyState >= 4) {
-            readyTimer = setTimeout(() => handleCanPlay(), 0);
-        } else if (video.readyState >= 2) {
-            // Have current data — wait a moment for more buffering
-            readyTimer = setTimeout(() => handleCanPlay(), 500);
+        // If already has data, fire immediately
+        if (video.readyState >= 3) {
+            handleCanPlay();
+            return;
         }
 
-        // Longer fallback for slow connections (e.g. GitHub Pages serving 12MB video)
-        const fallbackTimer = setTimeout(() => {
-            handleCanPlay();
-        }, 6000);
-
-        return () => {
-            if (readyTimer) clearTimeout(readyTimer);
-            clearTimeout(fallbackTimer);
-        };
+        const fallbackTimer = setTimeout(() => handleCanPlay(), 5000);
+        return () => clearTimeout(fallbackTimer);
     }, [handleCanPlay]);
 
-    // iOS/Mobile: prime video for seeking
+    // Prime video: pause it and set frame 0 so browser renders the first frame
     useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
 
-        const mobile = isMobileDevice();
-        let primed = false;
-
         const prime = () => {
-            if (primed) return;
-            primed = true;
-
-            // On mobile with intro disabled, prime to time 0 instead of INTRO_START_TIME
-            const current = video.currentTime;
-            const target = mobile
-                ? 0
-                : current > 0
-                    ? current
-                    : INTRO_START_TIME;
-
-            // Safari/Chrome mobile play button hack: keep video "playing" but at 0 speed.
-            // This prevents the OS from natively injecting a large play button on a "paused" video.
-            video.playbackRate = 0;
-            video.currentTime = target;
-
-            video.play().catch(() => {
-                // If play() is blocked, we still fallback to scrubbing paused
-                video.pause();
-            });
+            // KEY: fully pause the video — playbackRate=0 tricks don't reliably render frames
+            video.pause();
+            video.currentTime = isMobileDevice() ? 0 : INTRO_START_TIME;
         };
 
-        if (video.readyState >= 2) prime();
-        video.addEventListener("loadeddata", prime);
-        window.addEventListener("touchstart", prime, { once: true });
+        if (video.readyState >= 2) {
+            prime();
+        } else {
+            video.addEventListener("loadeddata", prime, { once: true });
+        }
+
+        // On mobile: one touch event to unlock the media element
+        const unlock = () => {
+            video.play().then(() => video.pause()).catch(() => {});
+        };
+        window.addEventListener("touchstart", unlock, { once: true });
 
         return () => {
             video.removeEventListener("loadeddata", prime);
-            window.removeEventListener("touchstart", prime);
+            window.removeEventListener("touchstart", unlock);
         };
     }, []);
 
@@ -139,26 +113,19 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
         let lastSeekTimestamp = 0;
         const FRAME_DURATION = 1 / 60;
 
-        // Seek helper — only seek if the target time is within buffered range
+        // KEY FIX: pause fully so currentTime seeks actually render frames
+        video.pause();
+
+        // Seek helper — simple direct seek, video is always paused
         const seekVideo = (time: number) => {
-            // Check if target time is buffered (prevents stuck-on-first-frame on slow connections)
-            const buffered = video.buffered;
-            let isBuffered = false;
-            for (let i = 0; i < buffered.length; i++) {
-                if (time >= buffered.start(i) && time <= buffered.end(i)) {
-                    isBuffered = true;
-                    break;
-                }
-            }
-            // Only seek if data is available, otherwise skip this frame
-            if (isBuffered || video.readyState >= 4) {
-                video.currentTime = time;
-            }
+            video.currentTime = Math.max(0, Math.min(time, video.duration || 0));
         };
 
-        // ─── Track scroll progress via passive scroll listener (cheaper than polling getBoundingClientRect) ───
+        // ─── Always poll scroll progress every rAF frame ───
+        // This works with Lenis, native scroll, and everything else
         let scrollProgress = 0;
-        let scrollDirty = true; // flag to avoid redundant rect reads
+        let cachedViewportW = window.innerWidth;
+        let cachedViewportH = window.innerHeight;
 
         const updateProgress = () => {
             const rect = container.getBoundingClientRect();
@@ -167,31 +134,22 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
             if (scrollRange > 0) {
                 scrollProgress = Math.max(0, Math.min(1, -rect.top / scrollRange));
             }
-            scrollDirty = false;
         };
 
-        const onScroll = () => { scrollDirty = true; };
-        window.addEventListener("scroll", onScroll, { passive: true });
-
-        // Intro state (local to this effect run)
+        // Intro state
         let introStartStamp: number | null = null;
         let introComplete = !cfg.INTRO_ENABLED;
         let waitingForData = cfg.INTRO_ENABLED;
 
-        // If intro skipped, start at time 0
         if (!cfg.INTRO_ENABLED) {
             currentTimeRef.current = 0;
-            video.currentTime = 0;
+            seekVideo(0);
         }
-
-        // Cache viewport to prevent jumping when mobile navigation bars hide/show
-        let cachedViewportW = window.innerWidth;
-        let cachedViewportH = window.innerHeight;
 
         const tick = (timestamp: number) => {
             if (!isActive) return;
 
-            // Only update viewport cache on orientation change (width change)
+            // Update viewport cache on orientation change
             if (window.innerWidth !== cachedViewportW) {
                 cachedViewportW = window.innerWidth;
                 cachedViewportH = window.innerHeight;
@@ -203,7 +161,7 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
                     if (video.readyState >= 2 || (timestamp - (introStartStamp || timestamp) > 1500)) {
                         waitingForData = false;
                         introStartStamp = timestamp;
-                        video.currentTime = INTRO_START_TIME;
+                        seekVideo(INTRO_START_TIME);
                         currentTimeRef.current = INTRO_START_TIME;
                     } else {
                         if (introStartStamp === null) introStartStamp = timestamp;
@@ -217,13 +175,13 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
                 const eased = 1 - Math.pow(1 - t, 3);
                 const introTime = INTRO_START_TIME * (1 - eased);
 
-                video.currentTime = introTime;
+                seekVideo(introTime);
                 currentTimeRef.current = introTime;
 
                 if (t >= 1) {
                     introComplete = true;
                     currentTimeRef.current = 0;
-                    video.currentTime = 0;
+                    seekVideo(0);
                 }
 
                 rafRef.current = requestAnimationFrame(tick);
@@ -231,10 +189,16 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
             }
 
             // ─── PHASE 2: Scroll-controlled video ───
-            // Only recalculate rect when scroll actually happened
-            if (scrollDirty) updateProgress();
+            // Always poll every frame — works with Lenis and native scroll
+            updateProgress();
 
-            const targetTime = scrollProgress * (video.duration || 0);
+            const duration = video.duration;
+            if (!duration || !isFinite(duration)) {
+                rafRef.current = requestAnimationFrame(tick);
+                return;
+            }
+
+            const targetTime = scrollProgress * duration;
             const diff = targetTime - currentTimeRef.current;
             const absDiff = Math.abs(diff);
 
@@ -259,14 +223,12 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
             rafRef.current = requestAnimationFrame(tick);
         };
 
-        // Do an initial progress read
         updateProgress();
         rafRef.current = requestAnimationFrame(tick);
 
         return () => {
             isActive = false;
             cancelAnimationFrame(rafRef.current);
-            window.removeEventListener("scroll", onScroll);
         };
     }, [isReady]);
 
@@ -276,7 +238,6 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
                 <motion.video
                     ref={videoRef}
                     src={`${basePath}/hero.mp4`}
-                    autoPlay
                     controls={false}
                     disablePictureInPicture
                     disableRemotePlayback
@@ -313,7 +274,7 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
                         }
                     }
                 />
-                {/* Invisible overlay to absolutely prevent touch/tap events from reaching the video and showing the play button */}
+                {/* Invisible overlay to prevent touch/tap events reaching the video */}
                 <div className="absolute inset-0 z-10 w-full h-full bg-transparent select-none pointer-events-none" />
             </div>
         </div>
