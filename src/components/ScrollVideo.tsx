@@ -65,13 +65,18 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
         if (!video) return;
 
         let readyTimer: NodeJS.Timeout | null = null;
-        if (video.readyState >= 2) {
+        // readyState 4 = HAVE_ENOUGH_DATA (can play through)
+        if (video.readyState >= 4) {
             readyTimer = setTimeout(() => handleCanPlay(), 0);
+        } else if (video.readyState >= 2) {
+            // Have current data — wait a moment for more buffering
+            readyTimer = setTimeout(() => handleCanPlay(), 500);
         }
 
+        // Longer fallback for slow connections (e.g. GitHub Pages serving 12MB video)
         const fallbackTimer = setTimeout(() => {
             handleCanPlay();
-        }, 3500);
+        }, 6000);
 
         return () => {
             if (readyTimer) clearTimeout(readyTimer);
@@ -134,9 +139,21 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
         let lastSeekTimestamp = 0;
         const FRAME_DURATION = 1 / 60;
 
-        // Seek helper — always use currentTime for frame-accurate seeking
+        // Seek helper — only seek if the target time is within buffered range
         const seekVideo = (time: number) => {
-            video.currentTime = time;
+            // Check if target time is buffered (prevents stuck-on-first-frame on slow connections)
+            const buffered = video.buffered;
+            let isBuffered = false;
+            for (let i = 0; i < buffered.length; i++) {
+                if (time >= buffered.start(i) && time <= buffered.end(i)) {
+                    isBuffered = true;
+                    break;
+                }
+            }
+            // Only seek if data is available, otherwise skip this frame
+            if (isBuffered || video.readyState >= 4) {
+                video.currentTime = time;
+            }
         };
 
         // ─── Track scroll progress via passive scroll listener (cheaper than polling getBoundingClientRect) ───
