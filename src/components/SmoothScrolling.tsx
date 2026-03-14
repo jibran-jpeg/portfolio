@@ -14,8 +14,9 @@ export default function SmoothScrolling({
             lerp: 0.09, // Responsive yet smooth — not floaty
             duration: 1.2,
             wheelMultiplier: 1,
-            touchMultiplier: 1.5,
             smoothWheel: true,
+            // Ensure touch scrolling remains fully native
+            syncTouch: false,
         });
 
         function raf(time: number) {
