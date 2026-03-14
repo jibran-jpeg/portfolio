@@ -8,6 +8,7 @@ interface SectionRevealProps {
     className?: string;
     direction?: "up" | "left" | "right";
     delay?: number;
+    blur?: boolean;
 }
 
 export default function SectionReveal({
@@ -15,13 +16,14 @@ export default function SectionReveal({
     className = "",
     direction = "up",
     delay = 0,
+    blur = true,
 }: SectionRevealProps) {
     const prefersReduced = useReducedMotion();
 
     const directionMap = {
-        up: { y: 30, x: 0 },
-        left: { y: 0, x: -30 },
-        right: { y: 0, x: 30 },
+        up: { y: 40, x: 0 },
+        left: { y: 0, x: -40 },
+        right: { y: 0, x: 40 },
     };
 
     const offset = directionMap[direction];
@@ -31,16 +33,16 @@ export default function SectionReveal({
             initial={
                 prefersReduced
                     ? { opacity: 0 }
-                    : { opacity: 0, ...offset }
+                    : { opacity: 0, filter: blur ? "blur(8px)" : "none", ...offset }
             }
-            whileInView={{ opacity: 1, x: 0, y: 0 }}
+            whileInView={{ opacity: 1, x: 0, y: 0, filter: "blur(0px)" }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{
-                duration: 0.7,
+                duration: 0.8,
                 delay,
                 ease: [0.22, 1, 0.36, 1],
             }}
-            style={{ willChange: "transform, opacity" }}
+            style={{ willChange: "transform, opacity, filter" }}
             className={className}
         >
             {children}
