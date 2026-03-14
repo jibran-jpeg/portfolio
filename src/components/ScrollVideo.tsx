@@ -63,7 +63,7 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
                 const blob = await response.blob();
                 
                 // Create a local object URL for the browser
-                objectUrl = URL.createObjectURL(blob);
+                objectUrl = URL.createObjectURL(new Blob([blob], { type: "video/mp4" }));
                 setVideoUrl(objectUrl);
             } catch (error) {
                 console.error("Failed to load video as blob. Fallback to direct URL.", error);
@@ -126,7 +126,7 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
     // Prime video + mobile unlock
     useEffect(() => {
         const video = videoRef.current;
-        if (!video) return;
+        if (!video || !videoUrl) return;
 
         const prime = () => {
             video.pause();
@@ -172,11 +172,11 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
         window.addEventListener("touchend", onFirstTouch, { once: true });
 
         return () => {
-            video.removeEventListener("loadeddata", prime);
+            video.removeEventListener("loadedmetadata", prime);
             window.removeEventListener("touchstart", onFirstTouch);
             window.removeEventListener("touchend", onFirstTouch);
         };
-    }, []);
+    }, [videoUrl]);
 
     // Main loop: intro reverse → scroll control
     useEffect(() => {
@@ -309,11 +309,10 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
     return (
         <div ref={containerRef} className="relative h-[800vh] w-full bg-[#0a0a0a]">
             <div className="sticky top-0 h-[100dvh] w-full overflow-hidden transition-[height] duration-500 ease-out">
-                {videoUrl && (
-                    <motion.video
-                        ref={videoRef}
-                        src={videoUrl}
-                        controls={false}
+                <motion.video
+                    ref={videoRef}
+                    src={videoUrl || undefined}
+                    controls={false}
                         disablePictureInPicture
                         disableRemotePlayback
                         muted
@@ -353,7 +352,6 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
                             }
                         }
                     />
-                )}
                 {/* Invisible overlay to prevent touch/tap events reaching the video */}
                 <div className="absolute inset-0 z-10 w-full h-full bg-transparent select-none pointer-events-none" />
             </div>
