@@ -20,15 +20,13 @@ const isMobileDevice = () => {
 
 // ─── Performance tuning per device ───
 const DESKTOP = {
-    LERP: 0.35,
-    MIN_SEEK_DELTA: (1 / 60) * 0.5,
+    MIN_SEEK_DELTA: 1 / 60 / 2, // half a frame at 60fps
     SEEK_THROTTLE_MS: 0,
     INTRO_ENABLED: true,
 };
 const MOBILE = {
-    LERP: 0.5,
-    MIN_SEEK_DELTA: 1 / 24,
-    SEEK_THROTTLE_MS: 50,
+    MIN_SEEK_DELTA: 1 / 60 / 2,
+    SEEK_THROTTLE_MS: 0,
     INTRO_ENABLED: false,
 };
 
@@ -43,9 +41,18 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
     const [isMobile, setIsMobile] = useState(false);
     const rafRef = useRef<number>(0);
     const currentTimeRef = useRef(0);
+    const isUnlockedRef = useRef(false); // tracks if mobile video is gesture-unlocked
 
     useEffect(() => {
         setIsMobile(isMobileDevice());
+    }, []);
+
+    // Add webkit-playsinline for older iOS Safari
+    useEffect(() => {
+        const video = videoRef.current;
+        if (!video) return;
+        video.setAttribute("webkit-playsinline", "true");
+        video.setAttribute("x-webkit-airplay", "deny");
     }, []);
 
     const handleCanPlay = useCallback(() => {
@@ -66,17 +73,17 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
             return;
         }
 
-        const fallbackTimer = setTimeout(() => handleCanPlay(), 5000);
+        // Shorter fallback on mobile (3s) since mobile browsers are stricter
+        const fallbackTimer = setTimeout(() => handleCanPlay(), isMobileDevice() ? 3000 : 5000);
         return () => clearTimeout(fallbackTimer);
     }, [handleCanPlay]);
 
-    // Prime video: pause it and set frame 0 so browser renders the first frame
+    // Prime video + mobile unlock
     useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
 
         const prime = () => {
-            // KEY: fully pause the video — playbackRate=0 tricks don't reliably render frames
             video.pause();
             video.currentTime = isMobileDevice() ? 0 : INTRO_START_TIME;
         };
@@ -87,15 +94,42 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
             video.addEventListener("loadeddata", prime, { once: true });
         }
 
-        // On mobile: one touch event to unlock the media element
-        const unlock = () => {
-            video.play().then(() => video.pause()).catch(() => {});
+        // ── Mobile unlock strategy ──
+        // On mobile, the browser blocks seeking until the user has triggered
+        // a play() via a real gesture. We track this with isUnlockedRef.
+        // We try TWO approaches:
+        // 1. Immediate silent play attempt (works on Android, fails quietly on iOS)
+        // 2. First touchstart/touchend gesture (guaranteed to work on iOS)
+        const doUnlock = () => {
+            if (isUnlockedRef.current) return;
+            const p = video.play();
+            if (p !== undefined) {
+                p.then(() => {
+                    video.pause();
+                    video.currentTime = currentTimeRef.current; // seek to where we are
+                    isUnlockedRef.current = true;
+                }).catch(() => {
+                    // Failed — user gesture still needed, wait for touch
+                });
+            }
         };
-        window.addEventListener("touchstart", unlock, { once: true });
+
+        // Try immediately (works without gesture on Android)
+        if (isMobileDevice()) {
+            doUnlock();
+        }
+
+        // Always listen for first touch as guaranteed fallback
+        const onFirstTouch = () => {
+            doUnlock();
+        };
+        window.addEventListener("touchstart", onFirstTouch, { once: true });
+        window.addEventListener("touchend", onFirstTouch, { once: true });
 
         return () => {
             video.removeEventListener("loadeddata", prime);
-            window.removeEventListener("touchstart", unlock);
+            window.removeEventListener("touchstart", onFirstTouch);
+            window.removeEventListener("touchend", onFirstTouch);
         };
     }, []);
 
@@ -111,7 +145,6 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
         let isActive = true;
         let lastSeekTime = -1;
         let lastSeekTimestamp = 0;
-        const FRAME_DURATION = 1 / 60;
 
         // KEY FIX: pause fully so currentTime seeks actually render frames
         video.pause();
@@ -121,8 +154,7 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
             video.currentTime = Math.max(0, Math.min(time, video.duration || 0));
         };
 
-        // ─── Always poll scroll progress every rAF frame ───
-        // This works with Lenis, native scroll, and everything else
+        // ─── Poll scroll progress every rAF frame ───
         let scrollProgress = 0;
         let cachedViewportW = window.innerWidth;
         let cachedViewportH = window.innerHeight;
@@ -189,7 +221,6 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
             }
 
             // ─── PHASE 2: Scroll-controlled video ───
-            // Always poll every frame — works with Lenis and native scroll
             updateProgress();
 
             const duration = video.duration;
@@ -198,15 +229,9 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
                 return;
             }
 
+            // All frames are keyframes — seek directly, no LERP needed
             const targetTime = scrollProgress * duration;
-            const diff = targetTime - currentTimeRef.current;
-            const absDiff = Math.abs(diff);
-
-            if (absDiff < FRAME_DURATION) {
-                currentTimeRef.current = targetTime;
-            } else {
-                currentTimeRef.current += diff * cfg.LERP;
-            }
+            currentTimeRef.current = targetTime;
 
             const seekDelta = Math.abs(currentTimeRef.current - lastSeekTime);
             const timeSinceLast = timestamp - lastSeekTimestamp;
@@ -214,7 +239,11 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
                 ? timeSinceLast >= cfg.SEEK_THROTTLE_MS
                 : true;
 
-            if (seekDelta >= cfg.MIN_SEEK_DELTA && video.readyState >= 2 && throttleOk) {
+            // On mobile: only seek if video is unlocked (gesture fired)
+            // On desktop: always seekable
+            const canSeek = mobile ? isUnlockedRef.current : true;
+
+            if (canSeek && seekDelta >= cfg.MIN_SEEK_DELTA && video.readyState >= 1 && throttleOk) {
                 seekVideo(currentTimeRef.current);
                 lastSeekTime = currentTimeRef.current;
                 lastSeekTimestamp = timestamp;
@@ -254,6 +283,9 @@ export default function ScrollVideo({ onReady }: ScrollVideoProps) {
                         pointerEvents: "none",
                         willChange: "transform",
                         transform: "translateZ(0)",
+                        // Force GPU layer on mobile
+                        backfaceVisibility: "hidden",
+                        WebkitBackfaceVisibility: "hidden",
                     }}
                     initial={isMobile
                         ? { opacity: 0 }
